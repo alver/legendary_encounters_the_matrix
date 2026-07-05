@@ -25,13 +25,16 @@ describe('card database parity with the original JS data', () => {
     expect(buildActMini('Act3').length).toBe(12); // 13 minus the Inevitable card
   });
 
-  it('gives every card a /cards/ image path and defaults', () => {
+  it('gives every card a CDN image URL and defaults', () => {
+    const cdn = /^https:\/\/images\.squarespace-cdn\.com\/.+\.jpg\?format=\d+w$/;
     for (const def of Object.values(CARDS)) {
-      expect(def.image).toMatch(/^\/cards\/.+\.jpg$/);
+      expect(def.image, def.id).toMatch(cdn);
       expect(def.kw).toBeInstanceOf(Array);
       expect(typeof def.recruit).toBe('number');
       expect(typeof def.attack).toBe('number');
     }
+    for (const a of Object.values(AVATARS)) expect(a.image, a.id).toMatch(cdn);
+    for (const [key, act] of Object.entries(ACT_CARDS)) expect(act.image, key).toMatch(cdn);
   });
 
   it('keys every avatar by its own id and has all 7 act cards', () => {

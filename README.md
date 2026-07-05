@@ -31,11 +31,11 @@ npm run preview   # serve dist/ locally
 
 ```
 index.html          minimal #root + /src/main.tsx entry
-public/cards/       the 102 scanned card images (served as-is)
 src/
   types.ts          all shared types (CardDef, GameState, ScriptHooks, UIPort…)
   version.ts        MX constants (row names, scan costs, phones…)
   cards.ts          the complete card database + deck builders
+  cardImages.ts     card id → art URL on legendarycardgame.com's CDN
   scripts.ts        per-card behaviour hooks (onPlay/reveal/fight/strike…)
   game.ts           the engine: state G, phases, actions, act progression
   ui/               React front end (store.ts is the engine↔React seam)

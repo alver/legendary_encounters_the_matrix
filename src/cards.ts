@@ -7,10 +7,14 @@
 // defeat: {A} (or {R} when defeatType:'R') needed to defeat/complete.
 // kw Unfightable == can't be fought by paying Attack at all.
 
+import { CARD_IMAGE_URLS } from './cardImages';
 import type { ActCardDef, AvatarDef, CardClass, CardDef, CardDefInput } from './types';
 
-// BASE_URL makes the build relocatable (e.g. GitHub Pages serves under /<repo>/).
-const IMG = (id: string): string => `${import.meta.env.BASE_URL}cards/${id}.jpg`;
+// Card art comes from legendarycardgame.com's CDN (see cardImages.ts) so the
+// scans don't have to be bundled. The BASE_URL fallback covers ids without a
+// CDN entry — served from public/cards/ if you keep local copies there.
+const IMG = (id: string): string =>
+  CARD_IMAGE_URLS[id] || `${import.meta.env.BASE_URL}cards/${id}.jpg`;
 
 export const CARDS: Record<string, CardDef> = {};
 function C(input: CardDefInput): CardDef {
@@ -909,7 +913,7 @@ export const AVATARS: Record<string, AvatarDef> = {
     rank: 1,
     speed: 5,
     health: 12,
-    image: `${import.meta.env.BASE_URL}cards/AvatarThomasAnderson-Neo.jpg`,
+    image: IMG('AvatarThomasAnderson-Neo'),
     hidden: true,
     passive: "That's Why It's Going To Work",
     abilities: { 1: '—', 2: 'You get +3 ⚔ and draw a card.', 3: 'You get +5 ⚔ and draw a card.' },
