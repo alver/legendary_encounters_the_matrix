@@ -3,18 +3,56 @@
 A browser-playable solo implementation of the **first film** ("The Matrix") from
 *Legendary Encounters: A Matrix Deck Building Game*: Act 1 *What Is the Matrix?*,
 Act 2 *Know Thyself*, Act 3 *He Is The One* — from "show Neo what the Matrix is"
-all the way to **Become The One**. Pure HTML/JS/CSS, no build step, personal use only.
+all the way to **Become The One**. Personal use only.
+
+Built with **Vite + TypeScript (strict) + React**. The game engine
+(`src/game.ts`, `src/scripts.ts`) is framework-free and talks to any front end
+through the `UIPort` interface — the React UI and the headless test bot are two
+implementations of the same seam.
 
 ## Run
 
 ```bash
-cd game
-python3 -m http.server 8917
-# open http://localhost:8917/
+npm install
+npm run dev
+# open the printed URL (default http://localhost:5173/)
 ```
 
-A local server is required (the game loads the card images).
-Quick start / testing: `http://localhost:8917/?avatar=AvatarTrinityMatrix` skips the setup screen.
+Quick start / testing: `/?avatar=AvatarTrinityMatrix` skips the setup screen.
+
+Production build:
+
+```bash
+npm run build     # typecheck + bundle into dist/
+npm run preview   # serve dist/ locally
+```
+
+## Project layout
+
+```
+index.html          minimal #root + /src/main.tsx entry
+public/cards/       the 102 scanned card images (served as-is)
+src/
+  types.ts          all shared types (CardDef, GameState, ScriptHooks, UIPort…)
+  version.ts        MX constants (row names, scan costs, phones…)
+  cards.ts          the complete card database + deck builders
+  scripts.ts        per-card behaviour hooks (onPlay/reveal/fight/strike…)
+  game.ts           the engine: state G, phases, actions, act progression
+  ui/               React front end (store.ts is the engine↔React seam)
+  styles/           the playmat CSS
+tests/              Vitest: card-data invariants + the headless bot sim
+```
+
+Engine notes:
+
+- The whole game state lives in one JSON-serializable object `G`
+  (module-local in `src/game.ts`, read via `getG()`/`g()`); **undo** is a
+  `snapshot()`/`restore()` of it. Keep it plain data.
+- All player prompts go through the injected `UIPort`
+  (`pick` / `chooseOption` / `confirmBox` / `showCard`), set with `setUI()`.
+- In the React UI, `UIPort.render()` bumps a version counter
+  (`useSyncExternalStore`) and prompts become modal components that resolve
+  the engine's promise (`src/ui/store.ts`).
 
 ## What's implemented
 
@@ -51,12 +89,18 @@ Quick start / testing: `http://localhost:8917/?avatar=AvatarTrinityMatrix` skips
 - Buttons for the act-specific actions (Free Neo, Jump, Minor Victory,
   Raise Time Track) appear when the act makes them possible.
 
-## Testing
+## Testing & checks
 
 ```bash
-node tools/sim.js 20          # headless bot games — expect 0 errors
-node tools/sim.js 20 --cheat  # bot with resource cheat: storms through all 3 acts
+npm test              # card-data invariants + 10 plain + 10 cheat bot games
+npm run sim           # heavy regression: 50 + 50 headless bot games
+npm run typecheck     # tsc --noEmit (strict)
+npm run lint          # eslint (typescript-eslint + react-hooks + no-floating-promises)
 ```
+
+The bot (`tests/bot.ts`) stubs `UIPort` with random auto-answers and plays full
+games through all three Acts; any engine regression surfaces as a runtime error
+or a game that never ends.
 
 ## Known limitations
 
