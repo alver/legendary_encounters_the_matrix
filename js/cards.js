@@ -7,7 +7,7 @@
 // defeat: {A} (or {R} when defeatType:'R') needed to defeat/complete.
 // kw Unfightable == can't be fought by paying Attack at all.
 
-const IMG = id => `assets/cards/${id}.jpg`;
+const IMG = id => `/cards/${id}.jpg`;
 
 const CARDS = {};
 function C(def) {
@@ -279,7 +279,7 @@ const AVATARS = {
   },
   AvatarThomasAndersonNeo: {
     id: 'AvatarThomasAndersonNeo', name: 'Neo', rank: 1, speed: 5, health: 12,
-    image: 'assets/cards/AvatarThomasAnderson-Neo.jpg', hidden: true,
+    image: '/cards/AvatarThomasAnderson-Neo.jpg', hidden: true,
     passive: "That's Why It's Going To Work",
     abilities: { 1: '—', 2: 'You get +3 ⚔ and draw a card.', 3: 'You get +5 ⚔ and draw a card.' },
   },
