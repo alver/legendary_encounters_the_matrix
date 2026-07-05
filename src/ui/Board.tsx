@@ -23,7 +23,7 @@ import {
 import { MX } from '../version';
 import type { CardInstance } from '../types';
 import { Card, DeckStack, Pile, type CardButton } from './Card';
-import { UI, run } from './store';
+import { hidePreview, run, showPreview } from './store';
 
 function TimeTrack() {
   const G = getG();
@@ -58,10 +58,10 @@ function ActZone() {
     <div className="zone-body" id="acts-body">
       <img
         src={a.image}
-        className="act-img actionable"
-        title="Click to read the Act card"
+        className="act-img"
         alt={a.name}
-        onClick={() => void UI.showCard(a.image, `Act ${G.act} Part ${G.part} — ${a.name}`)}
+        onMouseEnter={() => showPreview(a.image)}
+        onMouseLeave={hidePreview}
       />
     </div>
   );
