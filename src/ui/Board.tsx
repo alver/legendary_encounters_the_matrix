@@ -313,7 +313,6 @@ export function Board() {
                       forceUp
                       actionable={afford}
                       dim={!afford}
-                      badge={`${D(c).cost}®`}
                       onClick={() => void run(() => actRecruitDock(i))}
                     />
                   );
