@@ -70,7 +70,8 @@ function ActZone() {
 function enemyCardProps(c: CardInstance) {
   const def = D(c);
   const buttons: CardButton[] = [];
-  if (def.evade) buttons.push({ label: `Evade ${def.evade}®`, onClick: () => void run(() => actEvade(c.uid)) });
+  if (def.evade)
+    buttons.push({ label: `Evade ${def.evade}®`, onClick: () => void run(() => actEvade(c.uid)) });
   return {
     actionable: !fightBlockReason(c),
     onClick: () => void run(() => actFight(c.uid)),
@@ -104,7 +105,12 @@ function MatrixRow() {
               if (def.type === 'enemy') cardEl = <Card c={c} small {...enemyCardProps(c)} />;
               else if (def.type === 'challenge')
                 cardEl = (
-                  <Card c={c} small actionable onClick={() => void run(() => actCompleteChallenge(c.uid))} />
+                  <Card
+                    c={c}
+                    small
+                    actionable
+                    onClick={() => void run(() => actCompleteChallenge(c.uid))}
+                  />
                 );
               else cardEl = <Card c={c} small />;
             }
@@ -150,7 +156,8 @@ export function Board() {
     G && G.matrixDeck.length && G.matrixDeck[G.matrixDeck.length - 1].faceUp
       ? D(G.matrixDeck[G.matrixDeck.length - 1]).image
       : null;
-  const canHov = !!G && G.phase === 'action' && P().rsi === 'real' && P().R >= 3 && G.hovercraftStack.length > 0;
+  const canHov =
+    !!G && G.phase === 'action' && P().rsi === 'real' && P().R >= 3 && G.hovercraftStack.length > 0;
 
   return (
     <main id="board">
@@ -167,12 +174,16 @@ export function Board() {
           <div className="zone deck-zone">
             <span className="zone-label">Matrix Deck</span>
             <div className="zone-body" id="matrix-deck-body">
-              {G && <DeckStack count={G.matrixDeck.length} label="MATRIX" topImage={topOfMatrixDeck} />}
+              {G && (
+                <DeckStack count={G.matrixDeck.length} label="MATRIX" topImage={topOfMatrixDeck} />
+              )}
             </div>
           </div>
           <div className="zone pile-zone">
             <span className="zone-label">Defeated Enemies</span>
-            <div className="zone-body" id="defeated-enemies-body">{G && <Pile arr={G.defeatedEnemies} />}</div>
+            <div className="zone-body" id="defeated-enemies-body">
+              {G && <Pile arr={G.defeatedEnemies} />}
+            </div>
           </div>
         </section>
 
@@ -208,7 +219,8 @@ export function Board() {
               {G &&
                 G.combatZone.map(c => {
                   const def = D(c);
-                  if (def.type === 'enemy') return <Card key={c.uid} c={c} small forceUp {...enemyCardProps(c)} />;
+                  if (def.type === 'enemy')
+                    return <Card key={c.uid} c={c} small forceUp {...enemyCardProps(c)} />;
                   if (def.type === 'challenge')
                     return (
                       <Card
@@ -250,15 +262,21 @@ export function Board() {
           </div>
           <div className="zone deck-zone">
             <span className="zone-label">Strikes</span>
-            <div className="zone-body" id="strikes-body">{G && <DeckStack count={G.strikeDeck.length} label="STRIKE" />}</div>
+            <div className="zone-body" id="strikes-body">
+              {G && <DeckStack count={G.strikeDeck.length} label="STRIKE" />}
+            </div>
           </div>
           <div className="zone pile-zone">
             <span className="zone-label">Disc. Strikes</span>
-            <div className="zone-body" id="discarded-strikes-body">{G && <Pile arr={G.strikeDiscard} />}</div>
+            <div className="zone-body" id="discarded-strikes-body">
+              {G && <Pile arr={G.strikeDiscard} />}
+            </div>
           </div>
           <div className="zone pile-zone">
             <span className="zone-label">Disc. Chall./Events</span>
-            <div className="zone-body" id="discarded-ces-body">{G && <Pile arr={G.discardedCES} />}</div>
+            <div className="zone-body" id="discarded-ces-body">
+              {G && <Pile arr={G.discardedCES} />}
+            </div>
           </div>
         </section>
 
@@ -285,7 +303,8 @@ export function Board() {
               {G &&
                 G.dock.map((c, i) => {
                   if (!c) return <div key={i} className="card small placeholder" />;
-                  const afford = G.phase === 'action' && P().rsi === 'real' && P().R >= (D(c).cost ?? 0);
+                  const afford =
+                    G.phase === 'action' && P().rsi === 'real' && P().R >= (D(c).cost ?? 0);
                   return (
                     <Card
                       key={c.uid}
@@ -303,11 +322,15 @@ export function Board() {
           </div>
           <div className="zone deck-zone">
             <span className="zone-label">Zion</span>
-            <div className="zone-body" id="zion-body">{G && <DeckStack count={G.zion.length} label="ZION" />}</div>
+            <div className="zone-body" id="zion-body">
+              {G && <DeckStack count={G.zion.length} label="ZION" />}
+            </div>
           </div>
           <div className="zone pile-zone">
             <span className="zone-label">Defeated Heroes</span>
-            <div className="zone-body" id="defeated-heroes-body">{G && <Pile arr={G.defeatedHeroes} />}</div>
+            <div className="zone-body" id="defeated-heroes-body">
+              {G && <Pile arr={G.defeatedHeroes} />}
+            </div>
           </div>
         </section>
       </div>

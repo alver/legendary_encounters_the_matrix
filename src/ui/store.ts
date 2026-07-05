@@ -32,8 +32,21 @@ export function useGame(): GameState | null {
 
 /* ─────────── modal requests (promise based) ─────────── */
 export type ModalRequest =
-  | { kind: 'pick'; id: number; items: Pickable[]; opts: PickOptions; resolve: (sel: Pickable[]) => void }
-  | { kind: 'choice'; id: number; title: string; prompt: string; options: ChoiceOption<unknown>[]; resolve: (v: unknown) => void }
+  | {
+      kind: 'pick';
+      id: number;
+      items: Pickable[];
+      opts: PickOptions;
+      resolve: (sel: Pickable[]) => void;
+    }
+  | {
+      kind: 'choice';
+      id: number;
+      title: string;
+      prompt: string;
+      options: ChoiceOption<unknown>[];
+      resolve: (v: unknown) => void;
+    }
   | { kind: 'show'; id: number; img: string; title: string; resolve: () => void };
 
 let modal: ModalRequest | null = null;

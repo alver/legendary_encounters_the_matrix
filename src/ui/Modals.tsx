@@ -169,41 +169,46 @@ export function HowToModal({ open, onClose }: { open: boolean; onClose: () => vo
         <h2>How to play (solo quick reference)</h2>
         <div id="howto-body">
           <p>
-            <b>Goal:</b> play through all three Acts of <i>The Matrix</i> and win a Major Victory. Lose if your
-            damage reaches your health, or the Time Track hits 0, or the Strike deck fully runs out.
+            <b>Goal:</b> play through all three Acts of <i>The Matrix</i> and win a Major Victory.
+            Lose if your damage reaches your health, or the Time Track hits 0, or the Strike deck
+            fully runs out.
           </p>
           <p>
-            <b>Turn:</b> ① Matrix Phase — a face-down card enters the Rooftops and pushes everything left (off the
-            Subway → the Combat Zone). ② Action Phase — play cards from your hand for ® (Recruit) and ⚔ (Attack). ③
-            Strike Phase — each Combat-Zone enemy strikes: <i>you</i> if you're in the Matrix (draw a Strike card =
-            damage), the <i>Time Track</i> if you're in the Real World. ④ Cleanup — discard everything, draw 6.
+            <b>Turn:</b> ① Matrix Phase — a face-down card enters the Rooftops and pushes everything
+            left (off the Subway → the Combat Zone). ② Action Phase — play cards from your hand for
+            ® (Recruit) and ⚔ (Attack). ③ Strike Phase — each Combat-Zone enemy strikes: <i>you</i>{' '}
+            if you're in the Matrix (draw a Strike card = damage), the <i>Time Track</i> if you're
+            in the Real World. ④ Cleanup — discard everything, draw 6.
           </p>
           <p>
-            <b>Real World:</b> spend ® to recruit from the Dock or a Hovercraft (3®, always Coordinate).
+            <b>Real World:</b> spend ® to recruit from the Dock or a Hovercraft (3®, always
+            Coordinate).
             <br />
-            <b>In the Matrix:</b> spend ⚔ to scan face-down spaces (cost printed per space), fight revealed enemies,
-            and complete Challenges.
+            <b>In the Matrix:</b> spend ⚔ to scan face-down spaces (cost printed per space), fight
+            revealed enemies, and complete Challenges.
           </p>
           <p>
-            <b>Moving:</b> once per turn, free. You can always enter the Matrix. To leave you need a phone: Subway or
-            Alley must be a <i>clear</i> space, or pay 3 ® in the Combat Zone (blocked with 3+ cards there).
+            <b>Moving:</b> once per turn, free. You can always enter the Matrix. To leave you need a
+            phone: Subway or Alley must be a <i>clear</i> space, or pay 3 ® in the Combat Zone
+            (blocked with 3+ cards there).
           </p>
           <p>
-            <b>Class combos:</b> a Hero's {'{class}'}: ability works if you played another Hero of that class earlier
-            this turn.
+            <b>Class combos:</b> a Hero's {'{class}'}: ability works if you played another Hero of
+            that class earlier this turn.
           </p>
           <p>
-            <b>Solo Coordinate:</b> once per turn you may discard a Coordinate card (⇆ button) to draw a card.
+            <b>Solo Coordinate:</b> once per turn you may discard a Coordinate card (⇆ button) to
+            draw a card.
           </p>
           <p>
             <b>Free Your Mind</b> resolves your Avatar's ability for the current Act.
           </p>
           <p>
-            <b>Act 1:</b> complete both Challenges (they hide in the Matrix Deck), then gain/have a Hovercraft while
-            in the Real World and press <i>Free Neo</i>. <b>Act 2:</b> defeat all 7 Training cards (don't forget the
-            Jump), then See the Oracle. <b>Act 3:</b> rescue the captive (7®), defeat Agent Smith (12⚔, Subway or
-            Combat Zone), then become The One: raise the Time Track to 10 by paying ⚔ while Evading the Agents with
-            ®.
+            <b>Act 1:</b> complete both Challenges (they hide in the Matrix Deck), then gain/have a
+            Hovercraft while in the Real World and press <i>Free Neo</i>. <b>Act 2:</b> defeat all 7
+            Training cards (don't forget the Jump), then See the Oracle. <b>Act 3:</b> rescue the
+            captive (7®), defeat Agent Smith (12⚔, Subway or Combat Zone), then become The One:
+            raise the Time Track to 10 by paying ⚔ while Evading the Agents with ®.
           </p>
         </div>
       </div>

@@ -4,7 +4,8 @@
 // JSON.stringify/parse snapshots of it (see src/game.ts snapshot/restore).
 
 export type CardClass = 'I' | 'R' | 'S' | 'U' | 'T';
-export type CardType = 'hero' | 'hovercraft' | 'strike' | 'event' | 'enemy' | 'challenge' | 'special';
+export type CardType =
+  'hero' | 'hovercraft' | 'strike' | 'event' | 'enemy' | 'challenge' | 'special';
 
 export interface CardDef {
   id: string;

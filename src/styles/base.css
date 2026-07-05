@@ -1,6 +1,13 @@
 /* base.css — reset, fonts, top-level layout */
-* { margin: 0; padding: 0; box-sizing: border-box; }
-html, body { height: 100%; }
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+html,
+body {
+  height: 100%;
+}
 body {
   background: #050a06;
   color: #b6f0c0;
@@ -8,14 +15,27 @@ body {
   font-size: 14px;
   overflow: hidden;
 }
-h1, h2, h3 { font-family: 'Oswald', sans-serif; letter-spacing: .03em; }
-button { font-family: inherit; cursor: pointer; }
-button:disabled { opacity: .35; cursor: default; }
-img { user-select: none; }
+h1,
+h2,
+h3 {
+  font-family: 'Oswald', sans-serif;
+  letter-spacing: 0.03em;
+}
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+img {
+  user-select: none;
+}
 
 #layout {
   display: grid;
-  grid-template-areas: "board sidebar" "player sidebar";
+  grid-template-areas: 'board sidebar' 'player sidebar';
   grid-template-columns: 1fr 330px;
   grid-template-rows: 1fr auto;
   height: 100vh;
@@ -27,9 +47,8 @@ img { user-select: none; }
   padding: 8px;
   overflow: auto;
   background:
-    radial-gradient(ellipse at 30% 10%, rgba(0, 90, 30, .18), transparent 60%),
-    repeating-linear-gradient(180deg, rgba(0, 255, 90, .025) 0 2px, transparent 2px 26px),
-    #050a06;
+    radial-gradient(ellipse at 30% 10%, rgba(0, 90, 30, 0.18), transparent 60%),
+    repeating-linear-gradient(180deg, rgba(0, 255, 90, 0.025) 0 2px, transparent 2px 26px), #050a06;
 }
 #player-strip {
   grid-area: player;
@@ -58,7 +77,9 @@ img { user-select: none; }
   padding: 6px 12px;
   font-size: 13px;
 }
-.primary-btn:hover:not(:disabled) { background: #10592a; }
+.primary-btn:hover:not(:disabled) {
+  background: #10592a;
+}
 .ghost-btn {
   background: transparent;
   color: #8fd6a0;
@@ -67,7 +88,10 @@ img { user-select: none; }
   padding: 6px 12px;
   font-size: 13px;
 }
-.ghost-btn:hover:not(:disabled) { border-color: #23c95d; color: #d9ffe3; }
+.ghost-btn:hover:not(:disabled) {
+  border-color: #23c95d;
+  color: #d9ffe3;
+}
 .pending-btn {
   background: #241c05;
   color: #ffd75e;
@@ -77,4 +101,6 @@ img { user-select: none; }
   font-size: 12.5px;
   margin: 2px 4px 2px 0;
 }
-.pending-btn:hover { background: #45360b; }
+.pending-btn:hover {
+  background: #45360b;
+}

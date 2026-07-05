@@ -32,7 +32,13 @@ function ActionButtons() {
   const G = getG();
   if (!G || G.phase !== 'action') return <div id="action-buttons" />;
 
-  const buttons: { label: string; onClick: () => void; ghost?: boolean; disabled?: boolean; title?: string }[] = [];
+  const buttons: {
+    label: string;
+    onClick: () => void;
+    ghost?: boolean;
+    disabled?: boolean;
+    title?: string;
+  }[] = [];
   if (P().rsi === 'real') {
     buttons.push({
       label: 'Enter the Matrix',
@@ -48,7 +54,11 @@ function ActionButtons() {
       disabled: G.turn.freeMoveUsed || !!leaveMatrixBlockReason() || (!free && !pay),
       title:
         leaveMatrixBlockReason() ||
-        (free ? 'Through a free phone' : pay ? 'Pay 3 ® (Combat Zone phone)' : 'No phone available'),
+        (free
+          ? 'Through a free phone'
+          : pay
+            ? 'Pay 3 ® (Combat Zone phone)'
+            : 'No phone available'),
     });
   }
   if (G.act === 1 && G.part === 2)
@@ -56,7 +66,8 @@ function ActionButtons() {
       label: '★ Free Neo from the Matrix',
       onClick: () => void run(() => actFreeNeo()),
       disabled:
-        P().rsi !== 'real' || !(P().inPlay.some(c => D(c).type === 'hovercraft') || G.turn.gainedHovercraft),
+        P().rsi !== 'real' ||
+        !(P().inPlay.some(c => D(c).type === 'hovercraft') || G.turn.gainedHovercraft),
     });
   if (G.attached.building)
     buttons.push({
@@ -128,7 +139,10 @@ export function PlayerStrip() {
         <div className="strikes-taken">
           <span className="zone-label">Your Strikes</span>
           <div className="mini-row" id="player-strikes">
-            {G && P().strikes.map(s => <Card key={s.uid} c={s} small forceUp badge={`${D(s).damage || 0}`} />)}
+            {G &&
+              P().strikes.map(s => (
+                <Card key={s.uid} c={s} small forceUp badge={`${D(s).damage || 0}`} />
+              ))}
           </div>
         </div>
         <div className="rw-enemies">
@@ -167,8 +181,13 @@ export function PlayerStrip() {
               P().inPlay.map(c => {
                 const buttons: CardButton[] = [];
                 if (D(c).kw.includes('Sacrifice'))
-                  buttons.push({ label: 'Sacrifice', onClick: () => void run(() => actSacrifice(c.uid)) });
-                return <Card key={c.uid} c={c} small forceUp buttons={buttons.length ? buttons : null} />;
+                  buttons.push({
+                    label: 'Sacrifice',
+                    onClick: () => void run(() => actSacrifice(c.uid)),
+                  });
+                return (
+                  <Card key={c.uid} c={c} small forceUp buttons={buttons.length ? buttons : null} />
+                );
               })}
           </div>
         </div>
@@ -183,7 +202,11 @@ export function PlayerStrip() {
             {G &&
               P().hand.map(c => {
                 const buttons: CardButton[] = [];
-                if (D(c).kw.includes('Coordinate') && !G.turn.coordUsed && G.turnNo >= G.flags.noCoordUntilTurn)
+                if (
+                  D(c).kw.includes('Coordinate') &&
+                  !G.turn.coordUsed &&
+                  G.turnNo >= G.flags.noCoordUntilTurn
+                )
                   buttons.push({
                     label: '⇆ Coord',
                     title: 'Solo Coordinate: discard to draw a card',
@@ -210,7 +233,11 @@ export function PlayerStrip() {
           {G &&
             G.phase === 'action' &&
             G.pending.map((p, i) => (
-              <button key={`${p.uid}-${p.key}-${i}`} className="pending-btn" onClick={() => void run(() => actPending(i))}>
+              <button
+                key={`${p.uid}-${p.key}-${i}`}
+                className="pending-btn"
+                onClick={() => void run(() => actPending(i))}
+              >
                 ◈ {p.label}
               </button>
             ))}

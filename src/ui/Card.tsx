@@ -24,7 +24,17 @@ interface CardProps {
   className?: string;
 }
 
-export function Card({ c, small, forceUp, actionable, dim, badge, buttons, onClick, className }: CardProps) {
+export function Card({
+  c,
+  small,
+  forceUp,
+  actionable,
+  dim,
+  badge,
+  buttons,
+  onClick,
+  className,
+}: CardProps) {
   const back = c && !c.faceUp && !forceUp;
   const cls = [
     'card',

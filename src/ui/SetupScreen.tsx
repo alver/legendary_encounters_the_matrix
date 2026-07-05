@@ -47,7 +47,12 @@ export function SetupScreen({ open, onStart }: SetupScreenProps) {
         </div>
         <div className="setup-options">
           <label>
-            <input type="checkbox" id="opt-prep" checked={prepTurn} onChange={e => setPrepTurn(e.target.checked)} />{' '}
+            <input
+              type="checkbox"
+              id="opt-prep"
+              checked={prepTurn}
+              onChange={e => setPrepTurn(e.target.checked)}
+            />{' '}
             Prep turn (easier: skip the first Matrix Phase)
           </label>
           <label>
@@ -61,7 +66,11 @@ export function SetupScreen({ open, onStart }: SetupScreenProps) {
           </label>
           <label>
             Part of the System cards per Act:{' '}
-            <select id="opt-system" value={systemCards} onChange={e => setSystemCards(parseInt(e.target.value, 10) || 0)}>
+            <select
+              id="opt-system"
+              value={systemCards}
+              onChange={e => setSystemCards(parseInt(e.target.value, 10) || 0)}
+            >
               <option value="0">0 (solo standard)</option>
               <option value="1">1 (easier)</option>
               <option value="2">2 (easiest)</option>
