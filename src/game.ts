@@ -678,7 +678,6 @@ export async function freeScan(idx: number) {
 export function fightBlockReason(c: CardInstance): string | null {
   const def = D(c);
   const inRow = g().matrixRow.findIndex(x => x && x.uid === c.uid);
-  const inCZ = g().combatZone.some(x => x.uid === c.uid);
   const inRW = g().realWorldEnemies.some(x => x.uid === c.uid);
   if (def.type !== 'enemy' || !c.faceUp) return 'not-an-enemy';
   if (g().act === 3 && g().part === 3) return "You can't fight the Agents — become The One!";

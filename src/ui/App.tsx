@@ -4,8 +4,7 @@
 // render path.
 
 import { useEffect, useRef, useState } from 'react';
-import { AVATARS } from '../cards';
-import { newGame, startTurn } from '../game';
+import { getG, newGame, startTurn } from '../game';
 import type { GameOptions } from '../types';
 import { Board } from './Board';
 import { EngineModals, GameOverModal, HowToModal } from './Modals';
@@ -37,9 +36,10 @@ function CardPreview() {
 
 export function App() {
   useGame();
-  const [setupOpen, setSetupOpen] = useState(false);
+  // The ?avatar= quickstart boots the game before React mounts (see main.tsx);
+  // otherwise the setup screen opens over the empty board.
+  const [setupOpen, setSetupOpen] = useState(() => !getG());
   const [howtoOpen, setHowtoOpen] = useState(false);
-  const booted = useRef(false);
 
   function startGame(avatarId: string, options: GameOptions) {
     setSetupOpen(false);
@@ -48,15 +48,6 @@ export function App() {
     notify();
     void startTurn();
   }
-
-  useEffect(() => {
-    if (booted.current) return;
-    booted.current = true;
-    // ?avatar=AvatarTrinityMatrix — skip the setup screen (testing / quick start)
-    const auto = new URLSearchParams(location.search).get('avatar');
-    if (auto && AVATARS[auto] && !AVATARS[auto].hidden) startGame(auto, {});
-    else setSetupOpen(true);
-  }, []);
 
   // key remounts SetupScreen so a restart begins with a clean selection.
   return (

@@ -3,7 +3,7 @@
 // the original static modals in index.html.
 
 import { useState } from 'react';
-import { D, getG } from '../game';
+import { getG } from '../game';
 import { MX } from '../version';
 import type { CardInstance, Pickable, SpacePickItem } from '../types';
 import { Card } from './Card';
