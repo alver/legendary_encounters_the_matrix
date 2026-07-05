@@ -9,7 +9,8 @@
 
 import type { ActCardDef, AvatarDef, CardClass, CardDef, CardDefInput } from './types';
 
-const IMG = (id: string): string => `/cards/${id}.jpg`;
+// BASE_URL makes the build relocatable (e.g. GitHub Pages serves under /<repo>/).
+const IMG = (id: string): string => `${import.meta.env.BASE_URL}cards/${id}.jpg`;
 
 export const CARDS: Record<string, CardDef> = {};
 function C(input: CardDefInput): CardDef {
@@ -908,7 +909,7 @@ export const AVATARS: Record<string, AvatarDef> = {
     rank: 1,
     speed: 5,
     health: 12,
-    image: '/cards/AvatarThomasAnderson-Neo.jpg',
+    image: `${import.meta.env.BASE_URL}cards/AvatarThomasAnderson-Neo.jpg`,
     hidden: true,
     passive: "That's Why It's Going To Work",
     abilities: { 1: '—', 2: 'You get +3 ⚔ and draw a card.', 3: 'You get +5 ⚔ and draw a card.' },
