@@ -1,0 +1,127 @@
+/* board.css — the playmat: time track, matrix row, zones, dock */
+
+/* ── Time Track ── */
+.time-track {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 2px;
+  border: 1px solid #14522a;
+  border-radius: 6px;
+  background: #071409;
+  min-width: 52px;
+}
+.tt-title { font-size: 10px; text-align: center; color: #7fce93; letter-spacing: .1em; }
+.tt-cells { display: flex; flex-direction: column; gap: 2px; flex: 1; }
+.tt-cell {
+  width: 40px; height: 26px;
+  display: flex; align-items: center; justify-content: center;
+  border: 1px solid #14522a; border-radius: 3px;
+  color: #5e9d6f; font-size: 13px;
+}
+.tt-cell.current { background: #23c95d; color: #04140a; font-weight: bold; box-shadow: 0 0 10px #23c95d; }
+.tt-cell.danger.current { background: #e0483c; box-shadow: 0 0 10px #e0483c; color: #fff; }
+
+/* ── Playmat bands ── */
+.playmat { flex: 1; display: flex; flex-direction: column; gap: 8px; min-width: 980px; }
+.band { display: flex; gap: 8px; align-items: stretch; }
+.band-matrix { min-height: 205px; }
+.band-combat { min-height: 175px; }
+.band-dock { min-height: 175px; }
+
+.zone {
+  position: relative;
+  border: 1px solid #14522a;
+  border-radius: 6px;
+  background: rgba(6, 22, 11, .75);
+  padding: 20px 6px 6px;
+  display: flex;
+  flex-direction: column;
+}
+.zone-label {
+  position: absolute;
+  top: 3px; left: 8px;
+  font-size: 10.5px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: #79c98c;
+  white-space: nowrap;
+}
+.zone-body { flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; }
+.row-body { justify-content: flex-start; flex-wrap: wrap; overflow-x: auto; }
+.pile-zone { min-width: 96px; }
+.deck-zone { min-width: 96px; }
+
+.acts { min-width: 120px; }
+.act-img { height: 120px; border-radius: 6px; border: 1px solid #23c95d; cursor: zoom-in; }
+
+/* ── Matrix Row ── */
+.matrix-row {
+  flex: 1;
+  display: flex;
+  gap: 6px;
+  border: 1px solid #23c95d;
+  border-radius: 6px;
+  background: rgba(4, 30, 12, .6);
+  padding: 6px;
+}
+.row-space {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  border: 1px dashed #1a6b35;
+  border-radius: 6px;
+  padding: 4px;
+  min-width: 110px;
+}
+.space-head {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: #8fe3a4;
+  padding: 0 2px;
+}
+.scan-cost { color: #e8b64c; font-size: 10px; }
+.phone { color: #ffd75e; }
+.phone.dead { color: #e0483c; text-decoration: line-through; }
+#cz-phone.dead { color: #e0483c; text-decoration: line-through; }
+.attached { outline: 2px solid #e8b64c; margin-bottom: 2px; }
+
+.combat-zone { flex: 1.4; border-color: #7c2020; }
+.combat-zone .zone-label { color: #ef8d84; }
+.operations { flex: 1; }
+
+/* ── Dock ── */
+.dock {
+  position: relative;
+  flex: 1;
+  border: 1px solid #b98a00;
+  border-radius: 6px;
+  background: rgba(30, 24, 4, .45);
+  padding: 20px 6px 6px;
+  display: flex;
+}
+.dock-label { color: #ffd75e; }
+.dock .row-body { display: flex; gap: 8px; align-items: center; flex: 1; justify-content: center; }
+.recruitable { box-shadow: 0 0 12px #ffd75e; }
+
+/* ── standee ── */
+.standee {
+  text-align: center;
+  font-size: 13px;
+  color: #aef7bf;
+  border: 1px solid #23c95d;
+  border-radius: 6px;
+  padding: 8px 6px;
+  background: #0a2d14;
+  box-shadow: 0 0 12px rgba(35, 201, 93, .6);
+}
+.standee.empty { border: none; background: none; box-shadow: none; }
+.matrix-space-zone { min-width: 110px; }
