@@ -17,7 +17,7 @@ C({
   attack: 2,
   cost: 3,
   copies: 5,
-  text: 'You get +1 ⚔ for each other Neo Hero in your play area.',
+  text: 'You get +1 ⫻ for each other Neo Hero in your play area.',
 });
 C({
   id: 'NeoRevolutions_3Common',
@@ -111,7 +111,7 @@ C({
   attack: 2,
   cost: 4,
   copies: 5,
-  text: 'You get +2 ⚔ against the next Enemy you fight in the Real World this turn.',
+  text: 'You get +2 ⫻ against the next Enemy you fight in the Real World this turn.',
 });
 C({
   id: 'Link_3Common',
@@ -170,7 +170,7 @@ C({
   recruit: 2,
   cost: 4,
   copies: 5,
-  text: '{U}: You get +2 ⚔.',
+  text: '{U}: You get +2 ⫻.',
 });
 C({
   id: 'DefendersOfZion_4Uncommon',
@@ -181,7 +181,7 @@ C({
   attack: 3,
   cost: 6,
   copies: 3,
-  text: 'Choose a player. They may defeat a card in their discard pile. {T}: Once this turn, you get +2 ⚔ for each Hero that was defeated this turn.',
+  text: 'Choose a player. They may defeat a card in their discard pile. {T}: Once this turn, you get +2 ⫻ for each Hero that was defeated this turn.',
 });
 C({
   id: 'DefendersOfZion_1Rare',
@@ -192,7 +192,7 @@ C({
   attack: 5,
   cost: 7,
   copies: 1,
-  text: 'You pay 1 less ® to recruit The Kid for each Neo Hero in your play area.',
+  text: 'You pay 1 less ★ to recruit The Kid for each Neo Hero in your play area.',
 });
 
 // — Seraph — the Act 1 "Extra" Hero Group, shuffled into Zion by the deal
@@ -275,7 +275,7 @@ C({
   descriptor: 'Program',
   defeat: 5,
   copies: 1,
-  text: 'Strike: Instead of striking normally, the Merovingian "says something obnoxious": The next player discards a random There Is No Spoon or Unplug Hero from their hand. (Act 1 Part 2: You\'ve made a "deal" — he can now be fought and has 5 ⚔.)',
+  text: 'Strike: Instead of striking normally, the Merovingian "says something obnoxious": The next player discards a random There Is No Spoon or Unplug Hero from their hand. (Act 1 Part 2: You\'ve made a "deal" — he can now be fought and has 5 ⫻.)',
 });
 C({
   id: 'Act1ClubHel_4',
@@ -286,7 +286,7 @@ C({
   defeat: 2,
   copies: 6,
   kw: ['Flip180'],
-  text: 'Reveal: Flip this Enemy upside down (2 ⚔). Each time this Enemy moves, flip it again (right-side up: 4 ⚔).',
+  text: 'Reveal: Flip this Enemy upside down (2 ⫻). Each time this Enemy moves, flip it again (right-side up: 4 ⫻).',
 });
 C({
   id: 'Act1ClubHel_5',

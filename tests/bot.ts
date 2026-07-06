@@ -98,7 +98,7 @@ async function botActionPhase(cheat: boolean) {
         continue;
       }
     }
-    // 3c. Revolutions finale: steer the Time Track to the Smiths' ⚔ (3)
+    // 3c. Revolutions finale: steer the Time Track to the Smiths' ⫻ (3)
     if (g().movie === 'revolutions' && g().act === 3 && g().part === 3 && g().time !== 3) {
       const target = g().time + (g().time > 3 ? -1 : 1);
       if (P().R + P().A >= target) {

@@ -64,7 +64,7 @@ function ActionButtons() {
         (free
           ? 'Through a free phone'
           : pay
-            ? 'Pay 3 ® (Combat Zone phone)'
+            ? 'Pay 3 ★ (Combat Zone phone)'
             : 'No phone available'),
     });
   }
@@ -97,19 +97,19 @@ function ActionButtons() {
     });
   if (G.movie === 'matrix' && G.act === 3 && G.part === 3 && G.time < 10)
     buttons.push({
-      label: `⚡ Raise Time Track to ${G.time + 1} (pay ${G.time + 1}⚔)`,
+      label: `⚡ Raise Time Track to ${G.time + 1} (pay ${G.time + 1}⫻)`,
       onClick: () => void run(() => actRaiseTime()),
       disabled: P().A < G.time + 1,
     });
   if (G.movie === 'reloaded' && G.act === 3 && G.part === 3) {
     if (G.time < 10)
       buttons.push({
-        label: `⚡ Raise Time Track to ${G.time + 1} (pay ${G.time + 1}⚔)`,
+        label: `⚡ Raise Time Track to ${G.time + 1} (pay ${G.time + 1}⫻)`,
         onClick: () => void run(() => actReloadedTime('raise')),
         disabled: P().A < G.time + 1 || G.turn.timeMode === 'gain',
       });
     buttons.push({
-      label: `⚡ Gain ${G.time}⚔ per Neo Hero in play`,
+      label: `⚡ Gain ${G.time}⫻ per Neo Hero in play`,
       onClick: () => void run(() => actReloadedTime('gain')),
       disabled:
         !!G.turn.timeMode || !P().inPlay.some(c => D(c).group?.startsWith('Neo')),
@@ -121,7 +121,7 @@ function ActionButtons() {
       const target = G.time + dir;
       if (target < 1 || target > 10) continue;
       buttons.push({
-        label: `⚡ Deletion: Time Track → ${target} (pay ${target} ®/⚔)`,
+        label: `⚡ Deletion: Time Track → ${target} (pay ${target} ★/⫻)`,
         onClick: () => void run(() => actDeletionMove(dir)),
         disabled: P().R + P().A < target,
       });
@@ -205,7 +205,7 @@ export function PlayerStrip() {
                       small
                       forceUp
                       actionable
-                      badge={def.defeat ? `${def.defeat}${def.defeatType === 'R' ? '®' : '⚔'}` : null}
+                      badge={def.defeat ? `${def.defeat}${def.defeatType === 'R' ? '★' : '⫻'}` : null}
                       onClick={() => void run(() => actCompleteChallenge(c.uid))}
                     />
                   );
@@ -216,7 +216,7 @@ export function PlayerStrip() {
                     small
                     forceUp
                     actionable={!fightBlockReason(c)}
-                    badge={def.defeat != null ? `${effectiveFightCost(c)}⚔` : null}
+                    badge={def.defeat != null ? `${effectiveFightCost(c)}⫻` : null}
                     onClick={() => void run(() => actFight(c.uid))}
                   />
                 );
@@ -229,8 +229,8 @@ export function PlayerStrip() {
         <div className="status-bar" id="status-bar">
           {G && (
             <>
-              <span className="stat pool-r">® {P().R}</span>
-              <span className="stat pool-a">⚔ {P().A}</span>
+              <span className="stat pool-r">★ {P().R}</span>
+              <span className="stat pool-a">⫻ {P().A}</span>
               {G.movie === 'matrix' && (
                 <span className="stat">Training {G.flags.trainingDefeated}/7</span>
               )}

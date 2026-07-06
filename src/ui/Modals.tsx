@@ -176,20 +176,20 @@ export function HowToModal({ open, onClose }: { open: boolean; onClose: () => vo
           <p>
             <b>Turn:</b> ① Matrix Phase — a face-down card enters the Rooftops and pushes everything
             left (off the Subway → the Combat Zone). ② Action Phase — play cards from your hand for
-            ® (Recruit) and ⚔ (Attack). ③ Strike Phase — each Combat-Zone enemy strikes: <i>you</i>{' '}
+            ★ (Recruit) and ⫻ (Attack). ③ Strike Phase — each Combat-Zone enemy strikes: <i>you</i>{' '}
             if you're in the Matrix (draw a Strike card = damage), the <i>Time Track</i> if you're
             in the Real World. ④ Cleanup — discard everything, draw 6.
           </p>
           <p>
-            <b>Real World:</b> spend ® to recruit from the Dock or a Hovercraft (3®, always
+            <b>Real World:</b> spend ★ to recruit from the Dock or a Hovercraft (3★, always
             Coordinate).
             <br />
-            <b>In the Matrix:</b> spend ⚔ to scan face-down spaces (cost printed per space), fight
+            <b>In the Matrix:</b> spend ⫻ to scan face-down spaces (cost printed per space), fight
             revealed enemies, and complete Challenges.
           </p>
           <p>
             <b>Moving:</b> once per turn, free. You can always enter the Matrix. To leave you need a
-            phone: Subway or Alley must be a <i>clear</i> space, or pay 3 ® in the Combat Zone
+            phone: Subway or Alley must be a <i>clear</i> space, or pay 3 ★ in the Combat Zone
             (blocked with 3+ cards there).
           </p>
           <p>
@@ -207,8 +207,8 @@ export function HowToModal({ open, onClose }: { open: boolean; onClose: () => vo
             <b>Act 1:</b> complete both Challenges (they hide in the Matrix Deck), then gain/have a
             Hovercraft while in the Real World and press <i>Free Neo</i>. <b>Act 2:</b> defeat all 7
             Training cards (don't forget the Jump), then See the Oracle. <b>Act 3:</b> rescue the
-            captive (7®), defeat Agent Smith (12⚔, Subway or Combat Zone), then become The One:
-            raise the Time Track to 10 by paying ⚔ while Evading the Agents with ®.
+            captive (7★), defeat Agent Smith (12⫻, Subway or Combat Zone), then become The One:
+            raise the Time Track to 10 by paying ⫻ while Evading the Agents with ★.
           </p>
         </div>
       </div>

@@ -604,7 +604,7 @@ export async function placeIntoRow(c: CardInstance, idx: number) {
   // Club Hel Guard: each time it moves (already face up), it flips 180°.
   if (c.faceUp && D(c).kw.includes('Flip180')) {
     c.flipped = !c.flipped;
-    log(`${D(c).name} flips ${c.flipped ? 'upside down (2 ⚔)' : 'right-side up (4 ⚔)'}.`);
+    log(`${D(c).name} flips ${c.flipped ? 'upside down (2 ⫻)' : 'right-side up (4 ⫻)'}.`);
   }
   // "If this card would enter the Matrix Row, put it into the Combat Zone."
   if (D(c).kw.includes('EnterCZ')) {
@@ -645,7 +645,7 @@ async function revealCard(c: CardInstance, where: 'row' | 'cz'): Promise<boolean
   c.faceUp = true;
   const def = D(c);
   log(
-    `Revealed${where === 'cz' ? ' in the Combat Zone' : ''}: ${def.name}${def.defeat ? ` (${def.defeat}${def.defeatType === 'R' ? ' ®' : ' ⚔'})` : ''}.`,
+    `Revealed${where === 'cz' ? ' in the Combat Zone' : ''}: ${def.name}${def.defeat ? ` (${def.defeat}${def.defeatType === 'R' ? ' ★' : ' ⫻'})` : ''}.`,
   );
   const s = SCRIPTS[c.id];
   if (s && s.reveal) {
@@ -921,7 +921,7 @@ async function beginPartRevolutions(key: string) {
     for (let i = 0; i < 5; i++) refillDock(i);
     g().flags.merovingianDeal = true;
     log(
-      'The 14 SERAPH Heroes are shuffled into Zion. The "deal" is made — THE MEROVINGIAN can now be fought (5 ⚔)!',
+      'The 14 SERAPH Heroes are shuffled into Zion. The "deal" is made — THE MEROVINGIAN can now be fought (5 ⫻)!',
       'act',
     );
   }
@@ -978,7 +978,7 @@ async function beginPartRevolutions(key: string) {
     g().defeatedHeroes.push(...g().zion.splice(0));
     P().rsi = 'matrix';
     log(
-      'No more recruits, no way back: you enter the Matrix ONE LAST TIME. Defeat the ORACLE-SMITH (each fight: 5 ⚔ → draw a Strike; its damage sticks to him; 15 total defeats him). Pay ® equal to your speed to avoid his Strikes.',
+      'No more recruits, no way back: you enter the Matrix ONE LAST TIME. Defeat the ORACLE-SMITH (each fight: 5 ⫻ → draw a Strike; its damage sticks to him; 15 total defeats him). Pay ★ equal to your speed to avoid his Strikes.',
       'act',
     );
   }
@@ -987,7 +987,7 @@ async function beginPartRevolutions(key: string) {
     P().deck.push(...P().hand.splice(0), ...P().inPlay.splice(0), ...P().discard.splice(0));
     shuffle(P().deck);
     log(
-      'You shuffle your hand, play area, and discard pile into your deck. SEND THE DELETION PROGRAM: pay ®/⚔ equal to the next higher or lower number to move the Time Track; at 3 the leftmost SMITH is deleted. At the end of each turn your hand, play area, and discard pile are deleted!',
+      'You shuffle your hand, play area, and discard pile into your deck. SEND THE DELETION PROGRAM: pay ★/⫻ equal to the next higher or lower number to move the Time Track; at 3 the leftmost SMITH is deleted. At the end of each turn your hand, play area, and discard pile are deleted!',
       'act',
     );
   }
@@ -1080,11 +1080,11 @@ async function beginPartReloaded(key: string) {
       g().realWorldEnemies.push(inev);
     }
     log(
-      'The Prophecy was a lie. TOW BOMB SENTINELS (20 ⚔) attack the Nebuchadnezzar in the Real World!',
+      'The Prophecy was a lie. TOW BOMB SENTINELS (20 ⫻) attack the Nebuchadnezzar in the Real World!',
       'bad',
     );
     log(
-      'Once per turn: pay ⚔ to raise the Time Track (any number of times), OR gain ⚔ equal to the Time Track for each Neo Hero in play.',
+      'Once per turn: pay ⫻ to raise the Time Track (any number of times), OR gain ⫻ equal to the Time Track for each Neo Hero in play.',
       'act',
     );
   }
@@ -1141,7 +1141,7 @@ async function beginPartMatrix(key: string, prevAct: number) {
     else if (inevIdx >= 0) await placeIntoRow(smith, Math.max(0, inevIdx - 1));
     else await placeIntoRow(smith, 4);
     log(
-      'An Agent has destroyed your exit. AGENT SMITH (12 ⚔) blocks your way — defeat him in the Subway or the Combat Zone, or run for a Minor Victory.',
+      'An Agent has destroyed your exit. AGENT SMITH (12 ⫻) blocks your way — defeat him in the Subway or the Combat Zone, or run for a Minor Victory.',
       'bad',
     );
   }
@@ -1162,7 +1162,7 @@ async function beginPartMatrix(key: string, prevAct: number) {
     await placeIntoRow(Object.assign(mk('Act3HeIsTheOneExtra_6'), { faceUp: true }), 4); // Smith, Evade 10
     await UI.showCard(CARDS['Act3HeIsTheOneExtra_10A'].image, 'Become The One');
     log(
-      `BECOME THE ONE: pay ⚔ equal to the next number to raise the Time Track from ${g().time} to 10. Evade the Agents with ®. You cannot leave the Matrix, recruit, or fight the Agents.`,
+      `BECOME THE ONE: pay ⫻ equal to the next number to raise the Time Track from ${g().time} to 10. Evade the Agents with ★. You cannot leave the Matrix, recruit, or fight the Agents.`,
       'act',
     );
   }
@@ -1206,7 +1206,7 @@ export async function actPlayCard(uid: number) {
   P().R += def.recruit;
   P().A += def.attack;
   log(
-    `You play ${def.name}${def.recruit ? ` (+${def.recruit} ®)` : ''}${def.attack ? ` (+${def.attack} ⚔)` : ''}.`,
+    `You play ${def.name}${def.recruit ? ` (+${def.recruit} ★)` : ''}${def.attack ? ` (+${def.attack} ⫻)` : ''}.`,
   );
   const s = SCRIPTS[c.id];
   if (c.id === 'StarterFreeYourMind') await resolveActAbility();
@@ -1259,7 +1259,7 @@ export async function actCoordinate(uid: number) {
   UI.render();
 }
 
-// The Kid: 1 less ® per Neo Hero in your play area.
+// The Kid: 1 less ★ per Neo Hero in your play area.
 export function effectiveRecruitCost(c: CardInstance): number {
   const def = D(c);
   let cost = def.cost ?? 0;
@@ -1282,14 +1282,14 @@ export async function actRecruitDock(i: number) {
   }
   const cost = effectiveRecruitCost(c);
   if (P().R < cost) {
-    log(`Not enough ® (need ${cost}).`);
+    log(`Not enough ★ (need ${cost}).`);
     return;
   }
   P().R -= cost;
   g().dock[i] = null;
   gainCard(c, await gainDest(def.name));
   refillDock(i);
-  log(`You recruit ${def.name} (cost ${cost} ®).`, 'good');
+  log(`You recruit ${def.name} (cost ${cost} ★).`, 'good');
   await afterActionChecks();
 }
 // Towering Leap: once this turn, a gained Hero may go on top of your deck.
@@ -1315,7 +1315,7 @@ export async function actRecruitHovercraft() {
     return;
   }
   if (P().R < 3) {
-    log('Not enough ® (need 3).');
+    log('Not enough ★ (need 3).');
     return;
   }
   P().R -= 3;
@@ -1339,30 +1339,30 @@ export async function actScan(idx: number) {
     return;
   }
   const cost = MX.SCAN_COST[idx];
-  // A Backdoor lets you pay ® instead of ⚔ to scan this space.
+  // A Backdoor lets you pay ★ instead of ⫻ to scan this space.
   const backdoor = g().backdoors[idx];
   let payR = false;
   if (backdoor) {
     const canA = P().A >= cost;
     const canR = P().R >= cost;
     if (!canA && !canR) {
-      log(`Not enough ⚔ or ® to scan (need ${cost}).`);
+      log(`Not enough ⫻ or ★ to scan (need ${cost}).`);
       return;
     }
     payR =
       canR &&
       (!canA ||
         (await UI.chooseOption('Backdoor', `Pay for the scan (${cost}) with:`, [
-          { label: `${cost} ® (through the Backdoor)`, value: true },
-          { label: `${cost} ⚔`, value: false },
+          { label: `${cost} ★ (through the Backdoor)`, value: true },
+          { label: `${cost} ⫻`, value: false },
         ])));
   } else if (P().A < cost) {
-    log(`Not enough ⚔ to scan (need ${cost}).`);
+    log(`Not enough ⫻ to scan (need ${cost}).`);
     return;
   }
   if (payR) {
     P().R -= cost;
-    log(`You scan the ${MX.ROW_NAMES[idx]} through the Backdoor (−${cost} ®).`);
+    log(`You scan the ${MX.ROW_NAMES[idx]} through the Backdoor (−${cost} ★).`);
     // Find the Oracle: instead of revealing, you may walk through.
     const oracle = g().operations.find(x => x.id === 'Act1TheOraclesCall_5');
     if (oracle) {
@@ -1385,7 +1385,7 @@ export async function actScan(idx: number) {
     }
   } else {
     P().A -= cost;
-    log(`You scan the ${MX.ROW_NAMES[idx]} (−${cost} ⚔).`);
+    log(`You scan the ${MX.ROW_NAMES[idx]} (−${cost} ⫻).`);
   }
   c.scannedTurn = g().turnNo; // Mobile Bomb: revealed by a scan → holds fire
   await revealCard(c, 'row');
@@ -1436,7 +1436,7 @@ export function fightBlockReason(c: CardInstance): string | null {
   }
   if (c.noFightTurn === g().turnNo) return `${def.name} can't be fought this turn.`;
   const cost = effectiveFightCost(c);
-  if (P().A < cost) return `Not enough ⚔ (need ${cost}).`;
+  if (P().A < cost) return `Not enough ⫻ (need ${cost}).`;
   return null;
 }
 export function effectiveFightCost(c: CardInstance): number {
@@ -1461,15 +1461,15 @@ export async function actFight(uid: number) {
   const cost = effectiveFightCost(c);
   P().A -= cost;
   if (inCZ && g().turn.kungfuCZBonus) {
-    log(`I Know Kung Fu: −${g().turn.kungfuCZBonus} ⚔ on this fight.`, 'good');
+    log(`I Know Kung Fu: −${g().turn.kungfuCZBonus} ⫻ on this fight.`, 'good');
     g().turn.kungfuCZBonus = 0;
   }
   if (inRealWorldZone(c.uid) && g().turn.gunneryRWBonus) {
-    log(`Gunnery: −${g().turn.gunneryRWBonus} ⚔ on this fight.`, 'good');
+    log(`Gunnery: −${g().turn.gunneryRWBonus} ⫻ on this fight.`, 'good');
     g().turn.gunneryRWBonus = 0;
   }
   if (D(c).name === 'Smith') g().turn.smithsFought++;
-  log(`You fight ${D(c).name} (−${cost} ⚔).`);
+  log(`You fight ${D(c).name} (−${cost} ⫻).`);
   const s = SCRIPTS[c.id];
   if (s && s.fight) {
     await s.fight(c);
@@ -1507,13 +1507,13 @@ export async function actCompleteChallenge(uid: number) {
   }
   if (def.defeatType === 'R') {
     if (P().R < (def.defeat ?? 0)) {
-      log(`Not enough ® (need ${def.defeat}).`);
+      log(`Not enough ★ (need ${def.defeat}).`);
       return;
     }
     P().R -= def.defeat ?? 0;
   } else if (def.defeat) {
     if (P().A < def.defeat) {
-      log(`Not enough ⚔ (need ${def.defeat}).`);
+      log(`Not enough ⫻ (need ${def.defeat}).`);
       return;
     }
     P().A -= def.defeat;
@@ -1561,13 +1561,13 @@ export async function actMove() {
     ) {
       const ok = await UI.confirmBox(
         'Pay phone',
-        `Exit through the Combat Zone phone for ${MX.COMBAT_PHONE_COST} ®?`,
+        `Exit through the Combat Zone phone for ${MX.COMBAT_PHONE_COST} ★?`,
       );
       if (!ok) return;
       P().R -= MX.COMBAT_PHONE_COST;
       P().rsi = 'real';
       g().turn.freeMoveUsed = true;
-      log('You pay 3 ® and exit through the Combat Zone phone.', 'good');
+      log('You pay 3 ★ and exit through the Combat Zone phone.', 'good');
     } else {
       log('No available phone: Subway/Alley are blocked and the Combat Zone phone is unavailable.');
     }
@@ -1619,7 +1619,7 @@ export async function actEvade(uid: number) {
   const def = D(c);
   if (!def.evade) return;
   if (P().R < def.evade) {
-    log(`Not enough ® to Evade (need ${def.evade}).`);
+    log(`Not enough ★ to Evade (need ${def.evade}).`);
     return;
   }
   let target = -1;
@@ -1636,13 +1636,13 @@ export async function actEvade(uid: number) {
   removeCard(c.uid);
   g().matrixRow[target] = c;
   log(
-    `You Evade ${def.name} (−${def.evade} ®) — he is thrown back to the ${MX.ROW_NAMES[target]}.`,
+    `You Evade ${def.name} (−${def.evade} ★) — he is thrown back to the ${MX.ROW_NAMES[target]}.`,
     'good',
   );
   await afterActionChecks();
 }
 
-// Buy Time 5®: distract an Agent so it won't strike this turn.
+// Buy Time 5★: distract an Agent so it won't strike this turn.
 export async function actBuyTime(uid: number) {
   if (!assertAction()) return;
   const f = findZone(uid);
@@ -1654,12 +1654,12 @@ export async function actBuyTime(uid: number) {
     return;
   }
   if (P().R < 5) {
-    log('Not enough ® to Buy Time (need 5).');
+    log('Not enough ★ to Buy Time (need 5).');
     return;
   }
   P().R -= 5;
   c.buyTimeTurn = g().turnNo;
-  log(`You pay 5 ® to distract ${D(c).name} — it won't strike this turn.`, 'good');
+  log(`You pay 5 ★ to distract ${D(c).name} — it won't strike this turn.`, 'good');
   await afterActionChecks();
 }
 
@@ -1668,12 +1668,12 @@ export async function actRaiseTime() {
   const cost = g().time + 1;
   if (g().time >= 10) return;
   if (P().A < cost) {
-    log(`Not enough ⚔ (need ${cost} to raise the Time Track to ${cost}).`);
+    log(`Not enough ⫻ (need ${cost} to raise the Time Track to ${cost}).`);
     return;
   }
   P().A -= cost;
   g().time += 1;
-  log(`⚡ You pay ${cost} ⚔ — the Time Track rises to ${g().time}!`, 'act');
+  log(`⚡ You pay ${cost} ⫻ — the Time Track rises to ${g().time}!`, 'act');
   if (g().time >= 10) {
     await UI.showCard(CARDS['Act3HeIsTheOneExtra_10B'].image, 'Become The One');
     gameOver(
@@ -1789,12 +1789,12 @@ export async function actRescueKeymaker() {
   await afterActionChecks();
 }
 
-// Reloaded 3.3: once per turn, raise the Time Track with ⚔ (any number of
-// times) OR gain ⚔ equal to the Time Track for each Neo Hero in play.
+// Reloaded 3.3: once per turn, raise the Time Track with ⫻ (any number of
+// times) OR gain ⫻ equal to the Time Track for each Neo Hero in play.
 export async function actReloadedTime(mode: 'raise' | 'gain') {
   if (!assertAction() || g().movie !== 'reloaded' || !(g().act === 3 && g().part === 3)) return;
   if (g().turn.timeMode && g().turn.timeMode !== mode) {
-    log(`You already chose to ${g().turn.timeMode === 'raise' ? 'raise the Time Track' : 'gain ⚔'} this turn.`);
+    log(`You already chose to ${g().turn.timeMode === 'raise' ? 'raise the Time Track' : 'gain ⫻'} this turn.`);
     return;
   }
   if (mode === 'raise') {
@@ -1804,16 +1804,16 @@ export async function actReloadedTime(mode: 'raise' | 'gain') {
       return;
     }
     if (P().A < cost) {
-      log(`Not enough ⚔ (need ${cost} to raise the Time Track to ${cost}).`);
+      log(`Not enough ⫻ (need ${cost} to raise the Time Track to ${cost}).`);
       return;
     }
     g().turn.timeMode = 'raise';
     P().A -= cost;
     g().time += 1;
-    log(`⚡ You pay ${cost} ⚔ — the Time Track rises to ${g().time}.`, 'act');
+    log(`⚡ You pay ${cost} ⫻ — the Time Track rises to ${g().time}.`, 'act');
   } else {
     if (g().turn.timeMode === 'gain') {
-      log('You already gained ⚔ from the Time Track this turn.');
+      log('You already gained ⫻ from the Time Track this turn.');
       return;
     }
     const neos = P().inPlay.filter(c => D(c).group?.startsWith('Neo')).length;
@@ -1825,14 +1825,14 @@ export async function actReloadedTime(mode: 'raise' | 'gain') {
     const gain = g().time * neos;
     P().A += gain;
     log(
-      `⚡ Neo channels the Source: +${gain} ⚔ (Time Track ${g().time} × ${neos} Neo Hero${neos > 1 ? 'es' : ''}).`,
+      `⚡ Neo channels the Source: +${gain} ⫻ (Time Track ${g().time} × ${neos} Neo Hero${neos > 1 ? 'es' : ''}).`,
       'act',
     );
   }
   await afterActionChecks();
 }
 
-// Revolutions 3.3 — Send the Deletion Program: pay ®/⚔ equal to the next
+// Revolutions 3.3 — Send the Deletion Program: pay ★/⫻ equal to the next
 // higher or lower number to move the Time Track there.
 export async function actDeletionMove(dir: 1 | -1) {
   if (!assertAction() || g().movie !== 'revolutions' || !(g().act === 3 && g().part === 3)) return;
@@ -1842,10 +1842,10 @@ export async function actDeletionMove(dir: 1 | -1) {
     return;
   }
   if (P().R + P().A < target) {
-    log(`Not enough ® + ⚔ (need ${target} total to move the Time Track to ${target}).`);
+    log(`Not enough ★ + ⫻ (need ${target} total to move the Time Track to ${target}).`);
     return;
   }
-  // Pay with ® first, keeping ⚔ (only ® and ⚔ exist to pay with in solo).
+  // Pay with ★ first, keeping ⫻ (only ★ and ⫻ exist to pay with in solo).
   const fromR = Math.min(P().R, target);
   P().R -= fromR;
   P().A -= target - fromR;
@@ -1938,7 +1938,7 @@ async function afterActionChecks() {
   ) {
     await beginPart(2, 2);
   }
-  // Revolutions finale: while the Time Track equals the leftmost Smith's ⚔,
+  // Revolutions finale: while the Time Track equals the leftmost Smith's ⫻,
   // that Smith is deleted; all five gone = Major Victory.
   if (g().movie === 'revolutions' && g().act === 3 && g().part === 3 && !g().gameOver) {
     for (;;) {

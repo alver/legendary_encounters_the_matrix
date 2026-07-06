@@ -18,7 +18,7 @@ C({
   attack: 2,
   cost: 3,
   copies: 5,
-  text: '{U}: You get +1 ⚔. Get an additional +1 ⚔ for each Enemy in the Combat Zone.',
+  text: '{U}: You get +1 ⫻. Get an additional +1 ⫻ for each Enemy in the Combat Zone.',
 });
 C({
   id: 'NeoReloaded_3Common',
@@ -51,7 +51,7 @@ C({
   attack: 6,
   cost: 8,
   copies: 1,
-  text: '{S}: Count the number of {S} Heroes in your play area (including this one). Avoid that many of the next Strikes you would draw this turn. Enemies have that much -⚔ this turn.',
+  text: '{S}: Count the number of {S} Heroes in your play area (including this one). Avoid that many of the next Strikes you would draw this turn. Enemies have that much -⫻ this turn.',
 });
 
 // — Morpheus (Reloaded/Revolutions)
@@ -86,7 +86,7 @@ C({
   recruit: 3,
   cost: 5,
   copies: 3,
-  text: '{I}: You get +1 ® for each {I} Hero in your play area (including this one).',
+  text: '{I}: You get +1 ★ for each {I} Hero in your play area (including this one).',
 });
 C({
   id: 'MorpheusRelRev_1Rare',
@@ -111,7 +111,7 @@ C({
   attack: 1,
   cost: 2,
   copies: 5,
-  text: '{S}: You get +2 ⚔.',
+  text: '{S}: You get +2 ⫻.',
 });
 C({
   id: 'TrinityRelRev_3Common',
@@ -133,7 +133,7 @@ C({
   attack: 4,
   cost: 6,
   copies: 3,
-  text: '{R}: You get +1 ⚔ for each {R} Hero in your play area (including this one).',
+  text: '{R}: You get +1 ⫻ for each {R} Hero in your play area (including this one).',
 });
 C({
   id: 'TrinityRelRev_1Rare',
@@ -270,7 +270,7 @@ C({
   descriptor: 'Program',
   defeat: 3,
   copies: 1,
-  text: "Fight: Discard the top card of the Strike deck. Seraph gets +⚔ during this fight equal to that Strike's damage. (Pay that much additional ⚔ to defeat him. Otherwise, leave him where he is.)",
+  text: "Fight: Discard the top card of the Strike deck. Seraph gets +⫻ during this fight equal to that Strike's damage. (Pay that much additional ⫻ to defeat him. Otherwise, leave him where he is.)",
 });
 C({
   id: 'Act1TheOraclesCall_3',
@@ -286,7 +286,7 @@ C({
   type: 'special',
   group: 'RelAct1',
   copies: 1,
-  text: 'Reveal: Attach this to the space it was revealed in. (If it was revealed in the Combat Zone, attach it to the Building.) You may pay ® instead of ⚔ to scan this space.',
+  text: 'Reveal: Attach this to the space it was revealed in. (If it was revealed in the Combat Zone, attach it to the Building.) You may pay ★ instead of ⫻ to scan this space.',
 });
 C({
   id: 'Act1TheOraclesCall_5',
@@ -294,7 +294,7 @@ C({
   type: 'challenge',
   group: 'RelAct1',
   copies: 1,
-  text: 'Reveal: Put this in Operations. When you pay ® to scan a Backdoor space that has a face-down card, instead of revealing that card, you may "walk through and find the Oracle": Defeat the Backdoor, complete this Challenge, then begin Act 1 Part 2.',
+  text: 'Reveal: Put this in Operations. When you pay ★ to scan a Backdoor space that has a face-down card, instead of revealing that card, you may "walk through and find the Oracle": Defeat the Backdoor, complete this Challenge, then begin Act 1 Part 2.',
 });
 C({
   id: 'Act1TheOraclesCall_6',
@@ -353,7 +353,7 @@ C({
   defeat: null,
   copies: 1,
   kw: ['Unfightable'],
-  text: "The Merovingian doesn't strike. When five Merovingian's Henchmen have been defeated, defeat the Merovingian. Combat Zone: Merovingian's Henchmen in the Combat Zone have +2 ⚔.",
+  text: "The Merovingian doesn't strike. When five Merovingian's Henchmen have been defeated, defeat the Merovingian. Combat Zone: Merovingian's Henchmen in the Combat Zone have +2 ⫻.",
 });
 C({
   id: 'Act2FreeTheKeymaker_3',
@@ -403,7 +403,7 @@ C({
   defeat: 10,
   copies: 3,
   kw: ['DoubleStrike', 'BuyTime'],
-  text: "Double Strike. Buy Time 5 ®. (While you're in the Matrix you can pay 5 ® to distract this Agent — it won't strike this turn.)",
+  text: "Double Strike. Buy Time 5 ★. (While you're in the Matrix you can pay 5 ★ to distract this Agent — it won't strike this turn.)",
 });
 C({
   id: 'Act3TheSource_2',
@@ -413,7 +413,7 @@ C({
   descriptor: 'Program',
   defeat: 1,
   copies: 6,
-  text: 'This Enemy has +1 ⚔ for each Enemy named Smith in the Defeated Enemies pile.',
+  text: 'This Enemy has +1 ⫻ for each Enemy named Smith in the Defeated Enemies pile.',
 });
 C({
   id: 'Act3TheSource_3',
@@ -463,7 +463,7 @@ C({
   copies: 0,
   realWorld: true,
   kw: ['FightOnly'],
-  text: 'Strike: If there are any Hovercraft cards in your play area, this Enemy defeats one of them instead of striking. Otherwise this strikes you twice and the next player once. You can only defeat this Enemy by fighting it with ⚔ (20). When you defeat it, turn the Act card over.',
+  text: 'Strike: If there are any Hovercraft cards in your play area, this Enemy defeats one of them instead of striking. Otherwise this strikes you twice and the next player once. You can only defeat this Enemy by fighting it with ⫻ (20). When you defeat it, turn the Act card over.',
 });
 
 /* — Act 3 Extras — */

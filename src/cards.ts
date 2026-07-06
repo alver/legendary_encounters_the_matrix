@@ -50,7 +50,7 @@ C({
   text: "Resolve your Avatar's ability for the current Act.",
 });
 
-/* ═══════════════ Hovercrafts (all Coordinate, ®2, cost 3) ═══════════════ */
+/* ═══════════════ Hovercrafts (all Coordinate, ★2, cost 3) ═══════════════ */
 for (const [id, name, cls] of [
   ['HovercraftTheCaduceus', 'The Caduceus', 'U'],
   ['HovercraftTheLagos', 'The Lagos', 'R'],
@@ -94,7 +94,7 @@ C({
   recruit: 2,
   cost: 3,
   copies: 5,
-  text: '{I}: You get +2 ®.',
+  text: '{I}: You get +2 ★.',
 });
 C({
   id: 'MorpheusTheMatrix_4Uncommon',
@@ -249,7 +249,7 @@ C({
   cls: 'S',
   cost: 5,
   copies: 3,
-  text: 'When you play this Hero, choose to get +3 ® or +3 ⚔.',
+  text: 'When you play this Hero, choose to get +3 ★ or +3 ⫻.',
 });
 C({
   id: 'NebuchadnezzarCrew_1Rare',
@@ -273,7 +273,7 @@ C({
   attack: 1,
   cost: 2,
   copies: 5,
-  text: 'You get +2 ⚔ against the next Enemy you fight in the Combat Zone this turn.',
+  text: 'You get +2 ⫻ against the next Enemy you fight in the Combat Zone this turn.',
 });
 C({
   id: 'Act1WhatIsTheMatrixExtra_3Common',
@@ -284,7 +284,7 @@ C({
   attack: 2,
   cost: 4,
   copies: 5,
-  text: '{R}: You get +2 ⚔.',
+  text: '{R}: You get +2 ⫻.',
 });
 C({
   id: 'Act1WhatIsTheMatrixExtra_4Uncommon',
@@ -796,7 +796,7 @@ C({
   copies: 1,
   kw: ['Unfightable'],
   realWorld: true,
-  text: 'This Enemy doesn\'t strike. During each Real World player\'s Strike Phase it "tears apart your ship": Defeat the top 10 cards of your deck; you may pay ⚔ to reduce the number.',
+  text: 'This Enemy doesn\'t strike. During each Real World player\'s Strike Phase it "tears apart your ship": Defeat the top 10 cards of your deck; you may pay ⫻ to reduce the number.',
 });
 C({
   id: 'Act3HeIsTheOneExtra_4',
@@ -826,7 +826,7 @@ C({
   copies: 1,
   kw: ['Chase', 'DoubleStrike', 'Undefeatable', 'Unfightable', 'Evade'],
   evade: 10,
-  text: 'Chase, Double Strike, Undefeatable, Evade 10 ®.',
+  text: 'Chase, Double Strike, Undefeatable, Evade 10 ★.',
 });
 C({
   id: 'Act3HeIsTheOneExtra_7',
@@ -838,7 +838,7 @@ C({
   copies: 1,
   kw: ['Chase', 'DoubleStrike', 'Undefeatable', 'Unfightable', 'Evade'],
   evade: 6,
-  text: 'Chase, Double Strike, Undefeatable, Evade 6 ®.',
+  text: 'Chase, Double Strike, Undefeatable, Evade 6 ★.',
 });
 C({
   id: 'Act3HeIsTheOneExtra_8',
@@ -850,7 +850,7 @@ C({
   copies: 1,
   kw: ['Chase', 'DoubleStrike', 'Undefeatable', 'Unfightable', 'Evade'],
   evade: 8,
-  text: 'Chase, Double Strike, Undefeatable, Evade 8 ®.',
+  text: 'Chase, Double Strike, Undefeatable, Evade 8 ★.',
 });
 C({
   id: 'Act3HeIsTheOneExtra_9',
@@ -869,7 +869,7 @@ C({
   type: 'special',
   group: 'Act3Extra',
   copies: 1,
-  text: 'On their turn, the Matrix player may pay ⚔ equal to the next higher number on the Time Track to move it to that number, any number of times. If it reaches 10, turn this card over.',
+  text: 'On their turn, the Matrix player may pay ⫻ equal to the next higher number on the Time Track to move it to that number, any number of times. If it reaches 10, turn this card over.',
 });
 C({
   id: 'Act3HeIsTheOneExtra_10B',
@@ -905,7 +905,7 @@ export const AVATARS: Record<string, AvatarDef> = {
     image: IMG('AvatarThomasAnderson-Neo'),
     hidden: true,
     passive: "That's Why It's Going To Work",
-    abilities: { 1: '—', 2: 'You get +3 ⚔ and draw a card.', 3: 'You get +5 ⚔ and draw a card.' },
+    abilities: { 1: '—', 2: 'You get +3 ⫻ and draw a card.', 3: 'You get +5 ⫻ and draw a card.' },
   },
   AvatarMorpheusMatrix: {
     id: 'AvatarMorpheusMatrix',
@@ -917,9 +917,9 @@ export const AVATARS: Record<string, AvatarDef> = {
     image: IMG('AvatarMorpheusMatrix'),
     passive: 'I Can Only Show You the Door',
     abilities: {
-      1: 'You get +1 ® and draw a card.',
-      2: 'You get +3 ® and draw a card.',
-      3: 'You get +5 ® and draw a card.',
+      1: 'You get +1 ★ and draw a card.',
+      2: 'You get +3 ★ and draw a card.',
+      3: 'You get +5 ★ and draw a card.',
     },
   },
   AvatarTrinityMatrix: {
@@ -1003,9 +1003,9 @@ export const AVATARS: Record<string, AvatarDef> = {
     image: IMG('AvatarNeoRevolutions'),
     passive: 'Because I Choose To',
     abilities: {
-      1: 'Draw a card. Once this turn, choose either +1 ® or +1 ⚔.',
-      2: 'Draw a card. Once this turn, choose either +2 ® or +3 ⚔.',
-      3: 'Draw a card. Once this turn, choose either +3 ® or +3 ⚔.',
+      1: 'Draw a card. Once this turn, choose either +1 ★ or +1 ⫻.',
+      2: 'Draw a card. Once this turn, choose either +2 ★ or +3 ⫻.',
+      3: 'Draw a card. Once this turn, choose either +3 ★ or +3 ⫻.',
     },
   },
   AvatarMorpheusRelRev: {
@@ -1033,9 +1033,9 @@ export const AVATARS: Record<string, AvatarDef> = {
     image: IMG('AvatarTrinityRelRev'),
     passive: "I'll Tear That Whole Building Down",
     abilities: {
-      1: 'You get +2 ⚔ and draw a card.',
-      2: 'You get +3 ⚔ and draw a card.',
-      3: 'You get +4 ⚔ and draw a card.',
+      1: 'You get +2 ⫻ and draw a card.',
+      2: 'You get +3 ⫻ and draw a card.',
+      3: 'You get +4 ⫻ and draw a card.',
     },
   },
   AvatarNiobe: {
@@ -1115,19 +1115,19 @@ export const ACT_CARDS: Record<Movie, Record<string, ActCardDef>> = {
       image: IMG('TheMatrixAct3Part1'),
       name: 'He Is The One',
       objective:
-        "Rescue the captive. (Clear the Captive's Guards from the Combat Zone, then pay 7 ® to complete Rescue the Captive.)",
+        "Rescue the captive. (Clear the Captive's Guards from the Combat Zone, then pay 7 ★ to complete Rescue the Captive.)",
     },
     '3.2': {
       image: IMG('TheMatrixAct3Part2'),
       name: 'He Is The One',
       objective:
-        'Defeat Agent Smith (12 ⚔ — only in the Subway or the Combat Zone). Or run, and end the game with a Minor Victory.',
+        'Defeat Agent Smith (12 ⫻ — only in the Subway or the Combat Zone). Or run, and end the game with a Minor Victory.',
     },
     '3.3': {
       image: IMG('TheMatrixAct3Part3A'),
       name: 'He Is The One',
       objective:
-        "Become The One: pay ⚔ equal to the next higher number to raise the Time Track to 10. Pay ® to Evade the Agents. You can't leave the Matrix, recruit, or fight the Agents.",
+        "Become The One: pay ⫻ equal to the next higher number to raise the Time Track to 10. Pay ★ to Evade the Agents. You can't leave the Matrix, recruit, or fight the Agents.",
     },
   },
   reloaded: {
@@ -1135,7 +1135,7 @@ export const ACT_CARDS: Record<Movie, Record<string, ActCardDef>> = {
       image: IMG('ReloadedAct1Part1'),
       name: "The Oracle's Call",
       objective:
-        'Use a Backdoor to speak with the Oracle. (Pay ® to scan a Backdoor space that has a face-down card, then "walk through".)',
+        'Use a Backdoor to speak with the Oracle. (Pay ★ to scan a Backdoor space that has a face-down card, then "walk through".)',
     },
     '1.2': {
       image: IMG('ReloadedAct1Part2'),
@@ -1159,7 +1159,7 @@ export const ACT_CARDS: Record<Movie, Record<string, ActCardDef>> = {
       image: IMG('ReloadedAct3Part1'),
       name: 'The Source',
       objective:
-        'Destroy the Power Station (4 ⚔) and Deactivate the Emergency System (4 ®) in either order, then Open the Door (Keymaker Hero in play). Once one is completed, the other two must be completed before your next turn — or all players are defeated.',
+        'Destroy the Power Station (4 ⫻) and Deactivate the Emergency System (4 ★) in either order, then Open the Door (Keymaker Hero in play). Once one is completed, the other two must be completed before your next turn — or all players are defeated.',
     },
     '3.2': {
       image: IMG('ReloadedAct3Part2'),
@@ -1171,7 +1171,7 @@ export const ACT_CARDS: Record<Movie, Record<string, ActCardDef>> = {
       image: IMG('ReloadedAct3Part3A'),
       name: 'The Source',
       objective:
-        'Defeat the Tow Bomb Sentinels (20 ⚔). Once per turn: pay ⚔ to raise the Time Track (any number of times), OR gain ⚔ equal to the Time Track for each Neo Hero in your play area.',
+        'Defeat the Tow Bomb Sentinels (20 ⫻). Once per turn: pay ⫻ to raise the Time Track (any number of times), OR gain ⫻ equal to the Time Track for each Neo Hero in your play area.',
     },
   },
   revolutions: {
@@ -1184,7 +1184,7 @@ export const ACT_CARDS: Record<Movie, Record<string, ActCardDef>> = {
       image: IMG('RevolutionsAct1Part2'),
       name: 'Club Hel',
       objective:
-        'The 14 Seraph Heroes are shuffled into Zion. You\'ve made a "deal" with the Merovingian: he can now be fought and has 5 ⚔. Defeat the Merovingian.',
+        'The 14 Seraph Heroes are shuffled into Zion. You\'ve made a "deal" with the Merovingian: he can now be fought and has 5 ⫻. Defeat the Merovingian.',
     },
     '2.1': {
       image: IMG('RevolutionsAct2Part1'),
@@ -1201,19 +1201,19 @@ export const ACT_CARDS: Record<Movie, Record<string, ActCardDef>> = {
       image: IMG('RevolutionsAct3Part1'),
       name: 'Everything That Has a Beginning...',
       objective:
-        'Make an Offer to Deus Ex Machina (7 ®, in the Real World, after Bane has been defeated).',
+        'Make an Offer to Deus Ex Machina (7 ★, in the Real World, after Bane has been defeated).',
     },
     '3.2': {
       image: IMG('RevolutionsAct3Part2'),
       name: 'Everything That Has a Beginning...',
       objective:
-        'Defeat the Oracle-Smith: each fight (5 ⚔) draws a Strike — its damage sticks to him; at 15 damage he falls. Pay ® equal to your speed to avoid his Strikes. Or give up, for a Minor Victory.',
+        'Defeat the Oracle-Smith: each fight (5 ⫻) draws a Strike — its damage sticks to him; at 15 damage he falls. Pay ★ equal to your speed to avoid his Strikes. Or give up, for a Minor Victory.',
     },
     '3.3': {
       image: IMG('RevolutionsAct3Part3A'),
       name: 'Everything That Has a Beginning...',
       objective:
-        "Send the Deletion Program: pay ®/⚔ equal to the next higher or lower number to move the Time Track; when it matches the leftmost Smith's ⚔ (3), that Smith is deleted. At the end of each turn your hand, play area, and discard pile are deleted. Defeat all five Smiths!",
+        "Send the Deletion Program: pay ★/⫻ equal to the next higher or lower number to move the Time Track; when it matches the leftmost Smith's ⫻ (3), that Smith is deleted. At the end of each turn your hand, play area, and discard pile are deleted. Defeat all five Smiths!",
     },
   },
 };

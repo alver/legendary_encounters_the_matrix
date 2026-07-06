@@ -25,7 +25,7 @@ export interface CardDef {
   text: string;
   damage?: number; // strikes
   descriptor?: string; // 'Human' | 'Program' | 'Training' | 'Machine'
-  defeat?: number | null; // ⚔ (or ® when defeatType 'R') to defeat/complete; null = unfightable
+  defeat?: number | null; // ⫻ (or ★ when defeatType 'R') to defeat/complete; null = unfightable
   defeatType?: 'R' | 'A';
   life?: number; // Oracle-Smith: accumulated damage needed to defeat him
   evade?: number;
@@ -43,7 +43,7 @@ export interface CardInstance {
   noFightTurn?: number; // "can't be fought this turn" (Security Guard)
   chosenCls?: CardClass; // Keymaker heroes: the class picked for this play
   chosenCls2?: CardClass; // Always Another Way: the second picked class
-  flipped?: boolean; // Club Hel Guard: upside down (2⚔) vs right-side up (4⚔)
+  flipped?: boolean; // Club Hel Guard: upside down (2⫻) vs right-side up (4⫻)
   scannedTurn?: number; // Mobile Bomb: revealed by a scan → doesn't strike that turn
   buyTimeTurn?: number; // Buy Time: paid off for this turn
 }
@@ -91,7 +91,7 @@ export interface TurnFlags {
   avoidMatrixEnemyStrikes: boolean;
   avoidNextStrikes: number; // I'll Handle Them: avoid the next N Strikes
   avoidAllStrikes: boolean; // You Cannot Stop Him, But I Can
-  enemyDebuff: number; // I'll Handle Them: all Enemies -N ⚔ this turn
+  enemyDebuff: number; // I'll Handle Them: all Enemies -N ⫻ this turn
   skipStrikePhase: boolean;
   noScan: boolean;
   noMatrixMove: boolean; // Stranded: can't enter or leave the Matrix this turn
@@ -119,7 +119,7 @@ export interface GameFlags {
   emergencyDone: boolean;
   sourceDeadlineTurn: number | null; // the other Source challenges must be done before this turn
   // — Revolutions —
-  merovingianDeal: boolean; // Act 1 Part 2: he can now be fought (5 ⚔)
+  merovingianDeal: boolean; // Act 1 Part 2: he can now be fought (5 ⫻)
   diggerDefeated: boolean;
   flyLineDone: boolean;
   baneDefeated: boolean;

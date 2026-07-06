@@ -75,15 +75,15 @@ function enemyCardProps(c: CardInstance) {
   const def = D(c);
   const buttons: CardButton[] = [];
   if (def.evade)
-    buttons.push({ label: `Evade ${def.evade}®`, onClick: () => void run(() => actEvade(c.uid)) });
+    buttons.push({ label: `Evade ${def.evade}★`, onClick: () => void run(() => actEvade(c.uid)) });
   if (def.kw.includes('BuyTime') && c.buyTimeTurn !== G.turnNo)
     buttons.push({
-      label: 'Buy Time 5®',
+      label: 'Buy Time 5★',
       title: "Distract this Agent — it won't strike this turn",
       onClick: () => void run(() => actBuyTime(c.uid)),
     });
-  let badge = def.defeat != null ? `${effectiveFightCost(c)}⚔` : null;
-  if (def.life) badge = `${effectiveFightCost(c)}⚔ · ${G.oracleSmithDamage}/${def.life}`;
+  let badge = def.defeat != null ? `${effectiveFightCost(c)}⫻` : null;
+  if (def.life) badge = `${effectiveFightCost(c)}⫻ · ${G.oracleSmithDamage}/${def.life}`;
   return {
     actionable: !fightBlockReason(c),
     onClick: () => void run(() => actFight(c.uid)),
@@ -111,7 +111,7 @@ function MatrixRow() {
                   small
                   actionable={inMatrix() && !G.turn.noScan && affordable}
                   onClick={() => void run(() => actScan(i))}
-                  badge={G.backdoors[i] ? `${cost}⚔/®` : `${cost}⚔`}
+                  badge={G.backdoors[i] ? `${cost}⫻/★` : `${cost}⫻`}
                 />
               );
             } else {
@@ -144,12 +144,12 @@ function MatrixRow() {
                   </>
                 )}
                 {G.backdoors[i] && (
-                  <span className="phone" title="Backdoor: you may pay ® instead of ⚔ to scan here">
+                  <span className="phone" title="Backdoor: you may pay ★ instead of ⫻ to scan here">
                     {' '}
-                    🚪®
+                    🚪★
                   </span>
                 )}
-                <span className="scan-cost">scan {MX.SCAN_COST[i]}⚔</span>
+                <span className="scan-cost">scan {MX.SCAN_COST[i]}⫻</span>
               </div>
               {i === 3 && G.attached.building && (
                 <Card
@@ -238,7 +238,7 @@ export function Board() {
                 }
                 id="cz-phone"
               >
-                ☎ 3®
+                ☎ 3★
               </span>
             </span>
             <div className="zone-body row-body" id="combat-zone-body">
@@ -277,7 +277,7 @@ export function Board() {
                       actionable={def.type === 'challenge'}
                       badge={
                         def.type === 'challenge' && def.defeat
-                          ? `${def.defeat}${def.defeatType === 'R' ? '®' : '⚔'}`
+                          ? `${def.defeat}${def.defeatType === 'R' ? '★' : '⫻'}`
                           : null
                       }
                       onClick={() => void run(() => actCompleteChallenge(c.uid))}
@@ -310,7 +310,7 @@ export function Board() {
         <section className="band band-dock">
           <div className="zone deck-zone" id="hovercraft">
             <span className="zone-label">
-              Hovercraft <small>(3®)</small>
+              Hovercraft <small>(3★)</small>
               {G && G.flyLine && (
                 <small title="Fly the Mechanical Line: gain or play Hovercrafts in the Real World">
                   {' '}

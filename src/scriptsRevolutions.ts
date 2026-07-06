@@ -50,7 +50,7 @@ export const SCRIPTS_REVOLUTIONS: Record<string, ScriptHooks> = {
       ).length;
       if (n) {
         P().A += n;
-        log(`It Ends Tonight: +${n} ⚔ (per other Neo Hero in play).`, 'good');
+        log(`It Ends Tonight: +${n} ⫻ (per other Neo Hero in play).`, 'good');
       }
     },
   },
@@ -138,7 +138,7 @@ export const SCRIPTS_REVOLUTIONS: Record<string, ScriptHooks> = {
     // Gunnery
     onPlay() {
       g().turn.gunneryRWBonus += 2;
-      log('Gunnery: +2 ⚔ against the next Enemy you fight in the Real World.', 'good');
+      log('Gunnery: +2 ⫻ against the next Enemy you fight in the Real World.', 'good');
     },
   },
   Link_3Common: {
@@ -210,7 +210,7 @@ export const SCRIPTS_REVOLUTIONS: Record<string, ScriptHooks> = {
     // Lock
     onCombo() {
       P().A += 2;
-      log('Lock: +2 ⚔.', 'good');
+      log('Lock: +2 ⫻.', 'good');
     },
   },
   DefendersOfZion_4Uncommon: {
@@ -227,13 +227,13 @@ export const SCRIPTS_REVOLUTIONS: Record<string, ScriptHooks> = {
       if (sel.length) defeatPlayerCard(sel[0], P().discard);
     },
     onCombo(c) {
-      addPending(c, 'rage', '+2 ⚔ per Hero defeated this turn');
+      addPending(c, 'rage', '+2 ⫻ per Hero defeated this turn');
     },
     pending: {
       rage() {
         const n = g().turn.heroesDefeated * 2;
         P().A += n;
-        log(`Zee: +${n} ⚔ (${g().turn.heroesDefeated} Hero(es) defeated this turn).`, 'good');
+        log(`Zee: +${n} ⫻ (${g().turn.heroesDefeated} Hero(es) defeated this turn).`, 'good');
       },
     },
   },
@@ -359,7 +359,7 @@ export const SCRIPTS_REVOLUTIONS: Record<string, ScriptHooks> = {
     // Club Hel Guard (Flip180 movement handled by the engine)
     reveal(c) {
       c.flipped = true;
-      log('The Club Hel Guard hangs from the ceiling — upside down (2 ⚔).');
+      log('The Club Hel Guard hangs from the ceiling — upside down (2 ⫻).');
     },
     fightCost: c => (c.flipped ? 2 : 4),
   },
@@ -520,7 +520,7 @@ export const SCRIPTS_REVOLUTIONS: Record<string, ScriptHooks> = {
     reveal(c) {
       removeCard(c.uid);
       g().realWorldEnemies.push(c); // rendered with the Real World cards
-      log('MAKE AN OFFER TO DEUS EX MACHINA (7 ® — Act 3, after Bane is defeated).', 'act');
+      log('MAKE AN OFFER TO DEUS EX MACHINA (7 ★ — Act 3, after Bane is defeated).', 'act');
       return true;
     },
     canComplete() {
@@ -614,13 +614,13 @@ export const SCRIPTS_REVOLUTIONS: Record<string, ScriptHooks> = {
       if (P().R >= bullet) {
         const dodge = await ui().confirmBox(
           'Oracle-Smith strikes',
-          `Pay ${bullet} ® (your speed) to avoid this Strike?`,
-          `Pay ${bullet} ®`,
+          `Pay ${bullet} ★ (your speed) to avoid this Strike?`,
+          `Pay ${bullet} ★`,
           'Take the Strike',
         );
         if (dodge) {
           P().R -= bullet;
-          log(`You blur aside — the Strike is avoided (−${bullet} ®).`, 'good');
+          log(`You blur aside — the Strike is avoided (−${bullet} ★).`, 'good');
           return;
         }
       }

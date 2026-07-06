@@ -67,7 +67,7 @@ export const SCRIPTS_RELOADED: Record<string, ScriptHooks> = {
     onCombo() {
       const n = 1 + g().combatZone.filter(x => D(x).type === 'enemy').length;
       P().A += n;
-      log(`Brawl: +${n} ⚔ (1 + Enemies in the Combat Zone).`, 'good');
+      log(`Brawl: +${n} ⫻ (1 + Enemies in the Combat Zone).`, 'good');
     },
   },
   NeoReloaded_3Common: {
@@ -100,7 +100,7 @@ export const SCRIPTS_RELOADED: Record<string, ScriptHooks> = {
       const n = inPlayOfClass('S');
       g().turn.avoidNextStrikes += n;
       g().turn.enemyDebuff += n;
-      log(`I'll Handle Them: avoid the next ${n} Strike(s); Enemies have −${n} ⚔ this turn.`, 'good');
+      log(`I'll Handle Them: avoid the next ${n} Strike(s); Enemies have −${n} ⫻ this turn.`, 'good');
     },
   },
 
@@ -123,7 +123,7 @@ export const SCRIPTS_RELOADED: Record<string, ScriptHooks> = {
     onCombo() {
       const n = inPlayOfClass('I');
       P().R += n;
-      log(`Zion, Hear Me!: +${n} ® (per Intellect Hero in play).`, 'good');
+      log(`Zion, Hear Me!: +${n} ★ (per Intellect Hero in play).`, 'good');
     },
   },
   // Fight Through Hel: plain Coordinate in solo (its return-to-hand clause
@@ -133,7 +133,7 @@ export const SCRIPTS_RELOADED: Record<string, ScriptHooks> = {
   TrinityRelRev_2Common: {
     onCombo() {
       P().A += 2;
-      log('Scorpion Kick: +2 ⚔.', 'good');
+      log('Scorpion Kick: +2 ⫻.', 'good');
     },
   },
   TrinityRelRev_3Common: {
@@ -154,7 +154,7 @@ export const SCRIPTS_RELOADED: Record<string, ScriptHooks> = {
     onCombo() {
       const n = inPlayOfClass('R');
       P().A += n;
-      log(`You Always Told Me to Stay Off the Freeway: +${n} ⚔.`, 'good');
+      log(`You Always Told Me to Stay Off the Freeway: +${n} ⫻.`, 'good');
     },
   },
   TrinityRelRev_1Rare: {
@@ -267,9 +267,9 @@ export const SCRIPTS_RELOADED: Record<string, ScriptHooks> = {
       } else if (P().A >= extra) {
         P().A -= extra;
         defeatEnemy(c);
-        log(`You flip ${D(sc).name} — you pay ${extra} more ⚔ and defeat Seraph!`, 'good');
+        log(`You flip ${D(sc).name} — you pay ${extra} more ⫻ and defeat Seraph!`, 'good');
       } else {
-        log(`You flip ${D(sc).name} — Seraph gets +${extra} ⚔ and you can't keep up. He stays.`, 'bad');
+        log(`You flip ${D(sc).name} — Seraph gets +${extra} ⫻ and you can't keep up. He stays.`, 'bad');
       }
     },
   },
@@ -298,7 +298,7 @@ export const SCRIPTS_RELOADED: Record<string, ScriptHooks> = {
       const at = idx >= 0 ? idx : 3;
       g().backdoors[at] = c;
       log(
-        `A BACKDOOR is attached to the ${['Subway', 'Streets', 'Alley', 'Building', 'Rooftops'][at]} — you may pay ® instead of ⚔ to scan there.`,
+        `A BACKDOOR is attached to the ${['Subway', 'Streets', 'Alley', 'Building', 'Rooftops'][at]} — you may pay ★ instead of ⫻ to scan there.`,
         'good',
       );
       return true;
@@ -308,7 +308,7 @@ export const SCRIPTS_RELOADED: Record<string, ScriptHooks> = {
     // Find the Oracle
     reveal: moveChallengeToOps,
     canComplete() {
-      return 'Pay ® to scan a Backdoor space with a face-down card, then walk through.';
+      return 'Pay ★ to scan a Backdoor space with a face-down card, then walk through.';
     },
   },
   Act1TheOraclesCall_6: {
@@ -354,7 +354,7 @@ export const SCRIPTS_RELOADED: Record<string, ScriptHooks> = {
   },
   Act2FreeTheKeymaker_2: { noStrike: true }, // The Merovingian (falls with his Henchmen)
   Act2FreeTheKeymaker_3: {
-    // Merovingian's Henchman: +2 ⚔ while he watches from the Combat Zone
+    // Merovingian's Henchman: +2 ⫻ while he watches from the Combat Zone
     fightCost(c, base) {
       const inCZ = g().combatZone.some(x => x.uid === c.uid);
       const meroCZ = g().combatZone.some(x => x.id === 'Act2FreeTheKeymaker_2');
@@ -404,7 +404,7 @@ export const SCRIPTS_RELOADED: Record<string, ScriptHooks> = {
   /* ══ Act 3: The Source ══ */
   // Agent: Double Strike + Buy Time are engine keywords.
   Act3TheSource_2: {
-    // Smith: +1 ⚔ per Smith already in the Defeated Enemies pile
+    // Smith: +1 ⫻ per Smith already in the Defeated Enemies pile
     fightCost: (c, base) =>
       base + g().defeatedEnemies.filter(x => D(x).name === 'Smith').length,
   },
@@ -576,15 +576,15 @@ async function rolandMove(extraDraw: boolean) {
 async function neoRevChoice(r: number, a: number) {
   drawCards(1);
   const v = await ui().chooseOption('Because I Choose To', 'Choose:', [
-    { label: `+${r} ®`, value: 'R' },
-    { label: `+${a} ⚔`, value: 'A' },
+    { label: `+${r} ★`, value: 'R' },
+    { label: `+${a} ⫻`, value: 'A' },
   ]);
   if (v === 'R') {
     P().R += r;
-    log(`Neo: +${r} ®.`, 'good');
+    log(`Neo: +${r} ★.`, 'good');
   } else {
     P().A += a;
-    log(`Neo: +${a} ⚔.`, 'good');
+    log(`Neo: +${a} ⫻.`, 'good');
   }
 }
 
@@ -612,17 +612,17 @@ export const AVATAR_SCRIPTS_RELREV: Record<string, AvatarScript> = {
     1: () => {
       P().A += 2;
       drawCards(1);
-      log('Trinity: +2 ⚔, draw a card.', 'good');
+      log('Trinity: +2 ⫻, draw a card.', 'good');
     },
     2: () => {
       P().A += 3;
       drawCards(1);
-      log('Trinity: +3 ⚔, draw a card.', 'good');
+      log('Trinity: +3 ⫻, draw a card.', 'good');
     },
     3: () => {
       P().A += 4;
       drawCards(1);
-      log('Trinity: +4 ⚔, draw a card.', 'good');
+      log('Trinity: +4 ⫻, draw a card.', 'good');
     },
   },
   AvatarNeoRevolutions: {

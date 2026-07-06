@@ -47,7 +47,7 @@ it('reloaded finale: architect -> tow bomb -> major victory', async () => {
   expect(P().rsi).toBe('real');
   const tow = g().realWorldEnemies.find(c => c.id === 'Act3TheSource_6B');
   expect(tow).toBeTruthy();
-  // Gain ⚔ from the Time Track through two Neo Heroes, then blow them up.
+  // Gain ⫻ from the Time Track through two Neo Heroes, then blow them up.
   g().phase = 'action';
   g().turnEnding = false;
   g().time = 10;

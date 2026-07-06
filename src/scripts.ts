@@ -117,7 +117,7 @@ const SCRIPTS_MATRIX: Record<string, ScriptHooks> = {
   MorpheusTheMatrix_3Common: {
     onCombo() {
       P().R += 2;
-      log('+2 ® (Welcome to the Real World).', 'good');
+      log('+2 ★ (Welcome to the Real World).', 'good');
     },
   },
   MorpheusTheMatrix_4Uncommon: {
@@ -296,15 +296,15 @@ const SCRIPTS_MATRIX: Record<string, ScriptHooks> = {
     // Switch
     async onPlay() {
       const v = await ui().chooseOption('Switch', 'Choose:', [
-        { label: '+3 ®', value: 'R' },
-        { label: '+3 ⚔', value: 'A' },
+        { label: '+3 ★', value: 'R' },
+        { label: '+3 ⫻', value: 'A' },
       ]);
       if (v === 'R') {
         P().R += 3;
-        log('+3 ®.', 'good');
+        log('+3 ★.', 'good');
       } else {
         P().A += 3;
-        log('+3 ⚔.', 'good');
+        log('+3 ⫻.', 'good');
       }
     },
   },
@@ -334,14 +334,14 @@ const SCRIPTS_MATRIX: Record<string, ScriptHooks> = {
     // I Know Kung Fu
     onPlay() {
       g().turn.kungfuCZBonus += 2;
-      log('+2 ⚔ against the next Enemy you fight in the Combat Zone.', 'good');
+      log('+2 ⫻ against the next Enemy you fight in the Combat Zone.', 'good');
     },
   },
   Act1WhatIsTheMatrixExtra_3Common: {
     // Guns, Lots of Guns
     onCombo() {
       P().A += 2;
-      log('+2 ⚔ (Guns. Lots of guns.)', 'good');
+      log('+2 ⫻ (Guns. Lots of guns.)', 'good');
     },
   },
   Act1WhatIsTheMatrixExtra_4Uncommon: {
@@ -627,7 +627,7 @@ const SCRIPTS_MATRIX: Record<string, ScriptHooks> = {
       g().realWorldEnemies.push(c);
       g().flags.cypherRevealTurn = g().turnNo;
       log(
-        'CYPHER stands over your body in the Real World! Defeat him (5 ⚔, in the Real World) before the end of your NEXT turn — or everyone dies.',
+        'CYPHER stands over your body in the Real World! Defeat him (5 ⫻, in the Real World) before the end of your NEXT turn — or everyone dies.',
         'bad',
       );
       return true;
@@ -834,29 +834,29 @@ const AVATAR_SCRIPTS_MATRIX: Record<string, AvatarScript> = {
     2: () => {
       P().A += 3;
       drawCards(1);
-      log('Neo: +3 ⚔, draw a card.', 'good');
+      log('Neo: +3 ⫻, draw a card.', 'good');
     },
     3: () => {
       P().A += 5;
       drawCards(1);
-      log('Neo: +5 ⚔, draw a card.', 'good');
+      log('Neo: +5 ⫻, draw a card.', 'good');
     },
   },
   AvatarMorpheusMatrix: {
     1: () => {
       P().R += 1;
       drawCards(1);
-      log('Morpheus: +1 ®, draw a card.', 'good');
+      log('Morpheus: +1 ★, draw a card.', 'good');
     },
     2: () => {
       P().R += 3;
       drawCards(1);
-      log('Morpheus: +3 ®, draw a card.', 'good');
+      log('Morpheus: +3 ★, draw a card.', 'good');
     },
     3: () => {
       P().R += 5;
       drawCards(1);
-      log('Morpheus: +5 ®, draw a card.', 'good');
+      log('Morpheus: +5 ★, draw a card.', 'good');
     },
   },
   AvatarTrinityMatrix: {
