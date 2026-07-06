@@ -5,7 +5,9 @@
 import {
   D,
   P,
+  actCompleteChallenge,
   actCoordinate,
+  actDeletionMove,
   actEndPhase,
   actFight,
   actFreeNeo,
@@ -15,8 +17,12 @@ import {
   actPending,
   actPlayCard,
   actRaiseTime,
+  actReloadedTime,
+  actRescueKeymaker,
   actSacrifice,
   avatar,
+  effectiveFightCost,
+  enterMatrixBlockReason,
   fightBlockReason,
   getG,
   inMatrix,
@@ -43,9 +49,10 @@ function ActionButtons() {
     buttons.push({
       label: 'Enter the Matrix',
       onClick: () => void run(() => actMove()),
-      disabled: G.turn.freeMoveUsed,
+      disabled: G.turn.freeMoveUsed || !!enterMatrixBlockReason(),
+      title: enterMatrixBlockReason() || undefined,
     });
-  } else {
+  } else if (P().rsi === 'matrix') {
     const free = phoneAvailable() != null;
     const pay = G.combatZone.length < MX.COMBAT_PHONE_BLOCKED_AT && P().R >= MX.COMBAT_PHONE_COST;
     buttons.push({
@@ -61,7 +68,7 @@ function ActionButtons() {
             : 'No phone available'),
     });
   }
-  if (G.act === 1 && G.part === 2)
+  if (G.movie === 'matrix' && G.act === 1 && G.part === 2)
     buttons.push({
       label: '★ Free Neo from the Matrix',
       onClick: () => void run(() => actFreeNeo()),
@@ -69,24 +76,57 @@ function ActionButtons() {
         P().rsi !== 'real' ||
         !(P().inPlay.some(c => D(c).type === 'hovercraft') || G.turn.gainedHovercraft),
     });
+  if (G.movie === 'reloaded' && G.act === 2 && G.part === 2)
+    buttons.push({
+      label: '★ Rescue the Keymaker',
+      onClick: () => void run(() => actRescueKeymaker()),
+      disabled: !inMatrix() || !P().inPlay.some(c => D(c).group === 'Keymaker'),
+      title: 'While in the Matrix with a Keymaker Hero in your play area',
+    });
   if (G.attached.building)
     buttons.push({
       label: 'Jump! (Building must be clear)',
       onClick: () => void run(() => actJump()),
       disabled: !inMatrix() || !!G.matrixRow[3],
     });
-  if (G.act === 3 && G.part === 2)
+  if (G.movie === 'matrix' && G.act === 3 && G.part === 2)
     buttons.push({
       label: 'Run — Minor Victory',
       onClick: () => void run(() => actMinorVictory(), { snap: false }),
       ghost: true,
     });
-  if (G.act === 3 && G.part === 3 && G.time < 10)
+  if (G.movie === 'matrix' && G.act === 3 && G.part === 3 && G.time < 10)
     buttons.push({
       label: `⚡ Raise Time Track to ${G.time + 1} (pay ${G.time + 1}⚔)`,
       onClick: () => void run(() => actRaiseTime()),
       disabled: P().A < G.time + 1,
     });
+  if (G.movie === 'reloaded' && G.act === 3 && G.part === 3) {
+    if (G.time < 10)
+      buttons.push({
+        label: `⚡ Raise Time Track to ${G.time + 1} (pay ${G.time + 1}⚔)`,
+        onClick: () => void run(() => actReloadedTime('raise')),
+        disabled: P().A < G.time + 1 || G.turn.timeMode === 'gain',
+      });
+    buttons.push({
+      label: `⚡ Gain ${G.time}⚔ per Neo Hero in play`,
+      onClick: () => void run(() => actReloadedTime('gain')),
+      disabled:
+        !!G.turn.timeMode || !P().inPlay.some(c => D(c).group?.startsWith('Neo')),
+      title: 'Once per turn — instead of raising the Time Track',
+    });
+  }
+  if (G.movie === 'revolutions' && G.act === 3 && G.part === 3) {
+    for (const dir of [-1, 1] as const) {
+      const target = G.time + dir;
+      if (target < 1 || target > 10) continue;
+      buttons.push({
+        label: `⚡ Deletion: Time Track → ${target} (pay ${target} ®/⚔)`,
+        onClick: () => void run(() => actDeletionMove(dir)),
+        disabled: P().R + P().A < target,
+      });
+    }
+  }
   buttons.push({
     label: 'End Action Phase ▸',
     onClick: () => void run(() => actEndPhase(), { snap: false }),
@@ -131,7 +171,13 @@ export function PlayerStrip() {
           )}
         </div>
         <div className={'rsi ' + (G ? (inMatrix() ? 'matrix' : 'real') : '')} id="rsi-indicator">
-          {G ? (inMatrix() ? 'IN THE MATRIX' : 'REAL WORLD') : '—'}
+          {G
+            ? inMatrix()
+              ? 'IN THE MATRIX'
+              : P().rsi === 'ops'
+                ? 'IN OPERATIONS'
+                : 'REAL WORLD'
+            : '—'}
         </div>
       </div>
 
@@ -149,17 +195,32 @@ export function PlayerStrip() {
           <span className="zone-label">Real World Enemies</span>
           <div className="mini-row" id="rw-enemies">
             {G &&
-              G.realWorldEnemies.map(c => (
-                <Card
-                  key={c.uid}
-                  c={c}
-                  small
-                  forceUp
-                  actionable={!fightBlockReason(c)}
-                  badge={D(c).defeat != null ? `${D(c).defeat}⚔` : null}
-                  onClick={() => void run(() => actFight(c.uid))}
-                />
-              ))}
+              G.realWorldEnemies.map(c => {
+                const def = D(c);
+                if (def.type === 'challenge')
+                  return (
+                    <Card
+                      key={c.uid}
+                      c={c}
+                      small
+                      forceUp
+                      actionable
+                      badge={def.defeat ? `${def.defeat}${def.defeatType === 'R' ? '®' : '⚔'}` : null}
+                      onClick={() => void run(() => actCompleteChallenge(c.uid))}
+                    />
+                  );
+                return (
+                  <Card
+                    key={c.uid}
+                    c={c}
+                    small
+                    forceUp
+                    actionable={!fightBlockReason(c)}
+                    badge={def.defeat != null ? `${effectiveFightCost(c)}⚔` : null}
+                    onClick={() => void run(() => actFight(c.uid))}
+                  />
+                );
+              })}
           </div>
         </div>
       </div>
@@ -170,7 +231,12 @@ export function PlayerStrip() {
             <>
               <span className="stat pool-r">® {P().R}</span>
               <span className="stat pool-a">⚔ {P().A}</span>
-              <span className="stat">Training {G.flags.trainingDefeated}/7</span>
+              {G.movie === 'matrix' && (
+                <span className="stat">Training {G.flags.trainingDefeated}/7</span>
+              )}
+              {G.movie === 'reloaded' && G.act === 2 && (
+                <span className="stat">Henchmen {G.flags.henchmenDefeated}/5</span>
+              )}
             </>
           )}
         </div>
@@ -204,7 +270,7 @@ export function PlayerStrip() {
                 const buttons: CardButton[] = [];
                 if (
                   D(c).kw.includes('Coordinate') &&
-                  !G.turn.coordUsed &&
+                  (!G.turn.coordUsed || c.id === 'ShipCaptains_4Uncommon') &&
                   G.turnNo >= G.flags.noCoordUntilTurn
                 )
                   buttons.push({

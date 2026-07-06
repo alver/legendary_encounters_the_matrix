@@ -83,12 +83,14 @@
   position: fixed;
   top: 40px;
   right: 340px;
-  z-index: 60;
+  /* above .modal-overlay (100) so the preview is not dimmed by the backdrop */
+  z-index: 130;
   pointer-events: none;
   filter: drop-shadow(0 6px 24px rgba(0, 0, 0, 0.8));
 }
 #card-preview img {
-  width: 320px;
+  width: min(380px, 26vw);
+  max-height: 88vh;
   border-radius: 12px;
 }
 
@@ -181,6 +183,37 @@
   max-width: 380px;
   max-height: 62vh;
   border-radius: 12px;
+}
+
+.movie-tabs {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin: 4px 0 10px;
+}
+.movie-tab {
+  background: #0a2d14;
+  color: #9ed8ac;
+  border: 1px solid #1c7a3f;
+  border-radius: 6px;
+  padding: 6px 14px;
+  font-size: 13px;
+  cursor: pointer;
+}
+.movie-tab:hover {
+  border-color: #23c95d;
+  color: #d9ffe3;
+}
+.movie-tab.selected {
+  background: #114d24;
+  border-color: #2fdd6b;
+  color: #d9ffe3;
+  box-shadow: 0 0 10px rgba(47, 221, 107, 0.35);
+}
+
+/* setup screen: lighter backdrop so the board stays visible behind it */
+#setup-modal {
+  background: rgba(2, 8, 4, 0.55);
 }
 
 .setup-options {

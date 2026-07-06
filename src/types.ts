@@ -6,6 +6,7 @@
 export type CardClass = 'I' | 'R' | 'S' | 'U' | 'T';
 export type CardType =
   'hero' | 'hovercraft' | 'strike' | 'event' | 'enemy' | 'challenge' | 'special';
+export type Movie = 'matrix' | 'reloaded' | 'revolutions';
 
 export interface CardDef {
   id: string;
@@ -13,6 +14,8 @@ export interface CardDef {
   type: CardType;
   group?: string;
   cls?: CardClass | null;
+  clsWild?: boolean; // Keymaker '*' icon: choose the class each time it's played
+  clsAll?: boolean; // Keymaker rare: counts as all five classes
   recruit: number;
   attack: number;
   cost: number | null;
@@ -24,6 +27,7 @@ export interface CardDef {
   descriptor?: string; // 'Human' | 'Program' | 'Training' | 'Machine'
   defeat?: number | null; // ⚔ (or ® when defeatType 'R') to defeat/complete; null = unfightable
   defeatType?: 'R' | 'A';
+  life?: number; // Oracle-Smith: accumulated damage needed to defeat him
   evade?: number;
   realWorld?: boolean;
   flipTo?: string;
@@ -37,6 +41,11 @@ export interface CardInstance {
   id: string;
   faceUp: boolean;
   noFightTurn?: number; // "can't be fought this turn" (Security Guard)
+  chosenCls?: CardClass; // Keymaker heroes: the class picked for this play
+  chosenCls2?: CardClass; // Always Another Way: the second picked class
+  flipped?: boolean; // Club Hel Guard: upside down (2⚔) vs right-side up (4⚔)
+  scannedTurn?: number; // Mobile Bomb: revealed by a scan → doesn't strike that turn
+  buyTimeTurn?: number; // Buy Time: paid off for this turn
 }
 
 export interface AvatarDef {
@@ -48,6 +57,7 @@ export interface AvatarDef {
   image: string;
   passive: string;
   abilities: Record<number, string>;
+  movies: Movie[];
   flipTo?: string;
   hidden?: boolean;
 }
@@ -59,7 +69,9 @@ export interface ActCardDef {
 }
 
 export type Phase = 'setup' | 'startup' | 'matrix' | 'action' | 'strike' | 'cleanup' | 'gameover';
-export type Rsi = 'real' | 'matrix';
+// 'ops' = Operations (Mobil Ave / meeting the Architect): neither Real World
+// nor Matrix — no scanning, fighting, recruiting or Coordinating.
+export type Rsi = 'real' | 'matrix' | 'ops';
 
 export interface GameOptions {
   prepTurn?: boolean;
@@ -73,12 +85,22 @@ export interface TurnFlags {
   coordUsed: boolean;
   gainedHovercraft: boolean;
   enemiesDefeated: number;
+  heroesDefeated: number; // player cards defeated this turn (Zee)
   kungfuCZBonus: number;
+  gunneryRWBonus: number; // Link's Gunnery: vs the next Real World enemy
   avoidMatrixEnemyStrikes: boolean;
+  avoidNextStrikes: number; // I'll Handle Them: avoid the next N Strikes
+  avoidAllStrikes: boolean; // You Cannot Stop Him, But I Can
+  enemyDebuff: number; // I'll Handle Them: all Enemies -N ⚔ this turn
   skipStrikePhase: boolean;
   noScan: boolean;
+  noMatrixMove: boolean; // Stranded: can't enter or leave the Matrix this turn
   drawPenalty: number;
   noMoreStrikes: boolean;
+  strikesDrawn: number; // for the Go Up, Over Them strike cap
+  smithsFought: number; // Reloaded Smiths: max one fight per turn
+  timeMode: 'raise' | 'gain' | null; // Reloaded 3.3: once-per-turn choice
+  deckTopGains: number; // Towering Leap: may put a gained Hero on your deck
 }
 
 export interface GameFlags {
@@ -90,6 +112,18 @@ export interface GameFlags {
   cypherRevealTurn: number | null;
   hesGoneUsed: boolean;
   noCoordUntilTurn: number;
+  // — Reloaded —
+  henchmenDefeated: number; // 5 defeated → the Merovingian falls
+  keymakerInGame: boolean; // the Keymaker group was shuffled into Zion
+  powerStationDone: boolean;
+  emergencyDone: boolean;
+  sourceDeadlineTurn: number | null; // the other Source challenges must be done before this turn
+  // — Revolutions —
+  merovingianDeal: boolean; // Act 1 Part 2: he can now be fought (5 ⚔)
+  diggerDefeated: boolean;
+  flyLineDone: boolean;
+  baneDefeated: boolean;
+  strikeCapUntilTurn: number; // Go Up, Over Them: max one Strike per turn until then
 }
 
 export interface PlayerState {
@@ -127,6 +161,7 @@ export interface GameOverState {
 
 export interface GameState {
   options: GameOptions;
+  movie: Movie;
   act: number;
   part: number;
   time: number;
@@ -137,6 +172,11 @@ export interface GameState {
   combatZone: CardInstance[];
   operations: CardInstance[];
   attached: { building: CardInstance | null };
+  backdoors: (CardInstance | null)[]; // Reloaded: Backdoor attached per Row space
+  dockEnemies: (CardInstance | null)[]; // Revolutions: Sentinel Swarms squatting Dock spaces
+  zionBlocker: CardInstance | null; // Revolutions: the Digger sitting on Zion
+  flyLine: { card: CardInstance; pos: number } | null; // Fly the Mechanical Line (0..4 under the Dock)
+  oracleSmithDamage: number; // Revolutions finale: damage piled on Oracle-Smith
   realWorldEnemies: CardInstance[];
   defeatedEnemies: CardInstance[];
   discardedCES: CardInstance[];
@@ -158,6 +198,7 @@ export interface GameState {
 export interface StrikeOpts {
   source?: CardInstance;
   unavoidable?: boolean;
+  wildSwing?: boolean; // may discard the first Strike drawn and draw a new one
 }
 
 export type MaybePromise<T> = T | Promise<T>;
@@ -169,6 +210,8 @@ export interface ScriptHooks {
   sacrifice?(c: CardInstance): MaybePromise<boolean | void>; // return false to cancel
   pending?: Record<string, (p: PendingAction) => MaybePromise<boolean | void>>; // return false to keep
   reveal?(c: CardInstance, where: 'row' | 'cz'): MaybePromise<boolean | void>; // true = consumed
+  fightBlock?(c: CardInstance): string | null; // extra "can't fight" reason (checked before kw Unfightable)
+  fightCost?(c: CardInstance, base: number): number; // dynamic fight cost
   fight?(c: CardInstance): MaybePromise<void>;
   onDefeat?(c: CardInstance): MaybePromise<void>;
   onComplete?(c: CardInstance): MaybePromise<void>;

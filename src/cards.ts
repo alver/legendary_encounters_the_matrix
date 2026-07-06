@@ -1,33 +1,20 @@
-// cards.ts — the complete card database for the first film ("The Matrix"):
-// starters, hovercrafts, avatars, strikes, Part of the System, the four Hero
-// Groups, the Neo (Extra) group, the Oracle cards, and the three Act mini-decks
-// with their Extras. Data transcribed from the Sorting Guide / card scans.
+// cards.ts — the card database: this file has the cards of the first film
+// ("The Matrix") plus everything shared between films (starters, hovercrafts,
+// strikes, Part of the System, all avatars, act cards, deck builders).
+// The Reloaded / Revolutions cards live in cardsReloaded.ts /
+// cardsRevolutions.ts; importing them here fills the shared CARDS registry.
+// Data transcribed from the Sorting Guide / card scans.
 //
 // Classes: I=Intellect  R=Range  S=Strength  U=Survival  T=Tech
 // defeat: {A} (or {R} when defeatType:'R') needed to defeat/complete.
 // kw Unfightable == can't be fought by paying Attack at all.
 
-import { CARD_IMAGE_URLS } from './cardImages';
-import type { ActCardDef, AvatarDef, CardClass, CardDef, CardDefInput } from './types';
+import { C, CARDS, IMG } from './cardsCore';
+import './cardsReloaded';
+import './cardsRevolutions';
+import type { ActCardDef, AvatarDef, CardClass, CardDef, Movie } from './types';
 
-// Card art comes from legendarycardgame.com's CDN (see cardImages.ts) so the
-// scans don't have to be bundled. The BASE_URL fallback covers ids without a
-// CDN entry — served from public/cards/ if you keep local copies there.
-const IMG = (id: string): string =>
-  CARD_IMAGE_URLS[id] || `${import.meta.env.BASE_URL}cards/${id}.jpg`;
-
-export const CARDS: Record<string, CardDef> = {};
-function C(input: CardDefInput): CardDef {
-  const def = input as CardDef;
-  def.recruit = def.recruit || 0;
-  def.attack = def.attack || 0;
-  def.cost = def.cost != null ? def.cost : null;
-  def.kw = def.kw || [];
-  def.copies = def.copies != null ? def.copies : 1;
-  def.image = def.image || IMG(def.id);
-  CARDS[def.id] = def;
-  return def;
-}
+export { CARDS };
 
 /* ═══════════════ Starters ═══════════════ */
 C({
@@ -899,6 +886,7 @@ export const AVATARS: Record<string, AvatarDef> = {
     id: 'AvatarThomasAnderson',
     name: 'Thomas Anderson',
     rank: 1,
+    movies: ['matrix'],
     speed: 5,
     health: 12,
     image: IMG('AvatarThomasAnderson'),
@@ -911,6 +899,7 @@ export const AVATARS: Record<string, AvatarDef> = {
     id: 'AvatarThomasAndersonNeo',
     name: 'Neo',
     rank: 1,
+    movies: ['matrix'],
     speed: 5,
     health: 12,
     image: IMG('AvatarThomasAnderson-Neo'),
@@ -922,6 +911,7 @@ export const AVATARS: Record<string, AvatarDef> = {
     id: 'AvatarMorpheusMatrix',
     name: 'Morpheus',
     rank: 2,
+    movies: ['matrix'],
     speed: 5,
     health: 11,
     image: IMG('AvatarMorpheusMatrix'),
@@ -936,6 +926,7 @@ export const AVATARS: Record<string, AvatarDef> = {
     id: 'AvatarTrinityMatrix',
     name: 'Trinity',
     rank: 3,
+    movies: ['matrix'],
     speed: 5,
     health: 11,
     image: IMG('AvatarTrinityMatrix'),
@@ -946,6 +937,7 @@ export const AVATARS: Record<string, AvatarDef> = {
     id: 'AvatarSwitch',
     name: 'Switch',
     rank: 4,
+    movies: ['matrix'],
     speed: 3,
     health: 10,
     image: IMG('AvatarSwitch'),
@@ -960,6 +952,7 @@ export const AVATARS: Record<string, AvatarDef> = {
     id: 'AvatarApoc',
     name: 'Apoc',
     rank: 5,
+    movies: ['matrix'],
     speed: 4,
     health: 10,
     image: IMG('AvatarApoc'),
@@ -974,6 +967,7 @@ export const AVATARS: Record<string, AvatarDef> = {
     id: 'AvatarMouse',
     name: 'Mouse',
     rank: 6,
+    movies: ['matrix'],
     speed: 4,
     health: 9,
     image: IMG('AvatarMouse'),
@@ -984,50 +978,243 @@ export const AVATARS: Record<string, AvatarDef> = {
       3: 'Same effect but with 3 damage or less.',
     },
   },
+  AvatarNeoReloaded: {
+    id: 'AvatarNeoReloaded',
+    name: 'Neo',
+    rank: 1,
+    movies: ['reloaded'],
+    speed: 4,
+    health: 12,
+    image: IMG('AvatarNeoReloaded'),
+    passive: "I Can't Lose You",
+    abilities: {
+      1: 'Draw a card. You may heal a Strike.',
+      2: 'Draw a card. You may heal up to two Strikes.',
+      3: 'Draw a card. You may heal up to three Strikes.',
+    },
+  },
+  AvatarNeoRevolutions: {
+    id: 'AvatarNeoRevolutions',
+    name: 'Neo',
+    rank: 1,
+    movies: ['revolutions'],
+    speed: 4,
+    health: 12,
+    image: IMG('AvatarNeoRevolutions'),
+    passive: 'Because I Choose To',
+    abilities: {
+      1: 'Draw a card. Once this turn, choose either +1 ® or +1 ⚔.',
+      2: 'Draw a card. Once this turn, choose either +2 ® or +3 ⚔.',
+      3: 'Draw a card. Once this turn, choose either +3 ® or +3 ⚔.',
+    },
+  },
+  AvatarMorpheusRelRev: {
+    id: 'AvatarMorpheusRelRev',
+    name: 'Morpheus',
+    rank: 2,
+    movies: ['reloaded', 'revolutions'],
+    speed: 4,
+    health: 11,
+    image: IMG('AvatarMorpheusRelRev'),
+    passive: 'I Do Not Believe In Chance',
+    abilities: {
+      1: 'Look at the top card of your deck; you may discard it. Draw a card.',
+      2: 'Look at the top two cards of your deck, discard any, and put the rest back in any order. Draw a card.',
+      3: 'Same as Act 2 but look at three cards instead of two.',
+    },
+  },
+  AvatarTrinityRelRev: {
+    id: 'AvatarTrinityRelRev',
+    name: 'Trinity',
+    rank: 3,
+    movies: ['reloaded', 'revolutions'],
+    speed: 4,
+    health: 11,
+    image: IMG('AvatarTrinityRelRev'),
+    passive: "I'll Tear That Whole Building Down",
+    abilities: {
+      1: 'You get +2 ⚔ and draw a card.',
+      2: 'You get +3 ⚔ and draw a card.',
+      3: 'You get +4 ⚔ and draw a card.',
+    },
+  },
+  AvatarNiobe: {
+    id: 'AvatarNiobe',
+    name: 'Niobe',
+    rank: 4,
+    movies: ['reloaded', 'revolutions'],
+    speed: 4,
+    health: 11,
+    image: IMG('AvatarNiobe'),
+    passive: 'Give Me Full Power',
+    abilities: {
+      1: 'You may gain a Hero from the Dock with cost 4 or less.',
+      2: 'Same effect and you may put it on top of your deck.',
+      3: 'Same as Act 2. Then draw a card.',
+    },
+  },
+  AvatarSoren: {
+    id: 'AvatarSoren',
+    name: 'Soren',
+    rank: 5,
+    movies: ['reloaded', 'revolutions'],
+    speed: 3,
+    health: 10,
+    image: IMG('AvatarSoren'),
+    passive: 'Three Ships, Three Captains',
+    abilities: {
+      1: 'Draw a card. Gain the top Hovercraft in that stack.',
+      2: 'Draw a card. Put a Hovercraft from your discard pile into your hand.',
+      3: 'Same as Act 2 and draw a second card.',
+    },
+  },
+  AvatarRoland: {
+    id: 'AvatarRoland',
+    name: 'Roland',
+    rank: 6,
+    movies: ['reloaded', 'revolutions'],
+    speed: 4,
+    health: 10,
+    image: IMG('AvatarRoland'),
+    passive: 'If That Ship Can Fly, We Need It',
+    abilities: {
+      1: 'Draw a card. Once this turn, you may move to the Real World.',
+      2: 'Same effect.',
+      3: 'Same as Act 2 and draw a second card.',
+    },
+  },
 };
 
-/* ═══════════════ Act cards (The Matrix) ═══════════════ */
-export const ACT_CARDS: Record<string, ActCardDef> = {
-  '1.1': {
-    image: IMG('TheMatrixAct1Part1'),
-    name: 'What Is the Matrix?',
-    objective:
-      'Show Neo what the Matrix is. (Find and complete both Challenges hidden in the Matrix Deck.)',
+/* ═══════════════ Act cards (per film) ═══════════════ */
+export const ACT_CARDS: Record<Movie, Record<string, ActCardDef>> = {
+  matrix: {
+    '1.1': {
+      image: IMG('TheMatrixAct1Part1'),
+      name: 'What Is the Matrix?',
+      objective:
+        'Show Neo what the Matrix is. (Find and complete both Challenges hidden in the Matrix Deck.)',
+    },
+    '1.2': {
+      image: IMG('TheMatrixAct1Part2'),
+      name: 'What Is the Matrix?',
+      objective:
+        'While in the Real World, if you gain a Hovercraft or have one in your play area, you may "free Neo from the Matrix".',
+    },
+    '2.1': {
+      image: IMG('TheMatrixAct2Part1'),
+      name: 'Know Thyself',
+      objective:
+        'Complete your training, then speak to the Oracle. (Defeat all 7 Training cards, then complete See The Oracle.)',
+    },
+    '2.2': {
+      image: IMG('TheMatrixAct2Part2'),
+      name: 'Know Thyself',
+      objective: 'Setup: gain a random Oracle Hero on top of your deck. Begin Act 3 Part 1.',
+    },
+    '3.1': {
+      image: IMG('TheMatrixAct3Part1'),
+      name: 'He Is The One',
+      objective:
+        "Rescue the captive. (Clear the Captive's Guards from the Combat Zone, then pay 7 ® to complete Rescue the Captive.)",
+    },
+    '3.2': {
+      image: IMG('TheMatrixAct3Part2'),
+      name: 'He Is The One',
+      objective:
+        'Defeat Agent Smith (12 ⚔ — only in the Subway or the Combat Zone). Or run, and end the game with a Minor Victory.',
+    },
+    '3.3': {
+      image: IMG('TheMatrixAct3Part3A'),
+      name: 'He Is The One',
+      objective:
+        "Become The One: pay ⚔ equal to the next higher number to raise the Time Track to 10. Pay ® to Evade the Agents. You can't leave the Matrix, recruit, or fight the Agents.",
+    },
   },
-  '1.2': {
-    image: IMG('TheMatrixAct1Part2'),
-    name: 'What Is the Matrix?',
-    objective:
-      'While in the Real World, if you gain a Hovercraft or have one in your play area, you may "free Neo from the Matrix".',
+  reloaded: {
+    '1.1': {
+      image: IMG('ReloadedAct1Part1'),
+      name: "The Oracle's Call",
+      objective:
+        'Use a Backdoor to speak with the Oracle. (Pay ® to scan a Backdoor space that has a face-down card, then "walk through".)',
+    },
+    '1.2': {
+      image: IMG('ReloadedAct1Part2'),
+      name: "The Oracle's Call",
+      objective:
+        'Setup: I Love Candy goes on top of your deck; three Smiths enter the Combat Zone. Begin Act 2 Part 1.',
+    },
+    '2.1': {
+      image: IMG('ReloadedAct2Part1'),
+      name: 'Free the Keymaker',
+      objective:
+        "Find the Keymaker. (With a Neo Hero in your play area, complete Persephone's Kiss.)",
+    },
+    '2.2': {
+      image: IMG('ReloadedAct2Part2'),
+      name: 'Free the Keymaker',
+      objective:
+        'The 14 Keymaker Heroes are shuffled into Zion. While in the Matrix, if you have a Keymaker Hero in your play area, you may "rescue him". Begin Act 3 Part 1.',
+    },
+    '3.1': {
+      image: IMG('ReloadedAct3Part1'),
+      name: 'The Source',
+      objective:
+        'Destroy the Power Station (4 ⚔) and Deactivate the Emergency System (4 ®) in either order, then Open the Door (Keymaker Hero in play). Once one is completed, the other two must be completed before your next turn — or all players are defeated.',
+    },
+    '3.2': {
+      image: IMG('ReloadedAct3Part2'),
+      name: 'The Source',
+      objective:
+        'Meet the Architect: return to the Source for a Minor Victory, or re-enter the Matrix and clear the Matrix deck, Row, and Combat Zone down to the Inevitable card.',
+    },
+    '3.3': {
+      image: IMG('ReloadedAct3Part3A'),
+      name: 'The Source',
+      objective:
+        'Defeat the Tow Bomb Sentinels (20 ⚔). Once per turn: pay ⚔ to raise the Time Track (any number of times), OR gain ⚔ equal to the Time Track for each Neo Hero in your play area.',
+    },
   },
-  '2.1': {
-    image: IMG('TheMatrixAct2Part1'),
-    name: 'Know Thyself',
-    objective:
-      'Complete your training, then speak to the Oracle. (Defeat all 7 Training cards, then complete See The Oracle.)',
-  },
-  '2.2': {
-    image: IMG('TheMatrixAct2Part2'),
-    name: 'Know Thyself',
-    objective: 'Setup: gain a random Oracle Hero on top of your deck. Begin Act 3 Part 1.',
-  },
-  '3.1': {
-    image: IMG('TheMatrixAct3Part1'),
-    name: 'He Is The One',
-    objective:
-      "Rescue the captive. (Clear the Captive's Guards from the Combat Zone, then pay 7 ® to complete Rescue the Captive.)",
-  },
-  '3.2': {
-    image: IMG('TheMatrixAct3Part2'),
-    name: 'He Is The One',
-    objective:
-      'Defeat Agent Smith (12 ⚔ — only in the Subway or the Combat Zone). Or run, and end the game with a Minor Victory.',
-  },
-  '3.3': {
-    image: IMG('TheMatrixAct3Part3A'),
-    name: 'He Is The One',
-    objective:
-      "Become The One: pay ⚔ equal to the next higher number to raise the Time Track to 10. Pay ® to Evade the Agents. You can't leave the Matrix, recruit, or fight the Agents.",
+  revolutions: {
+    '1.1': {
+      image: IMG('RevolutionsAct1Part1'),
+      name: 'Club Hel',
+      objective: 'Chase the Trainman to the Combat Zone.',
+    },
+    '1.2': {
+      image: IMG('RevolutionsAct1Part2'),
+      name: 'Club Hel',
+      objective:
+        'The 14 Seraph Heroes are shuffled into Zion. You\'ve made a "deal" with the Merovingian: he can now be fought and has 5 ⚔. Defeat the Merovingian.',
+    },
+    '2.1': {
+      image: IMG('RevolutionsAct2Part1'),
+      name: 'The Battle of Zion',
+      objective: 'Defeat the Digger and complete Fly the Mechanical Line (in either order).',
+    },
+    '2.2': {
+      image: IMG('RevolutionsAct2Part2'),
+      name: 'The Battle of Zion',
+      objective:
+        'Retreat to the Temple: move to the Real World and gain a Hero with cost 4 or less from the Dock. Begin Act 3 Part 1.',
+    },
+    '3.1': {
+      image: IMG('RevolutionsAct3Part1'),
+      name: 'Everything That Has a Beginning...',
+      objective:
+        'Make an Offer to Deus Ex Machina (7 ®, in the Real World, after Bane has been defeated).',
+    },
+    '3.2': {
+      image: IMG('RevolutionsAct3Part2'),
+      name: 'Everything That Has a Beginning...',
+      objective:
+        'Defeat the Oracle-Smith: each fight (5 ⚔) draws a Strike — its damage sticks to him; at 15 damage he falls. Pay ® equal to your speed to avoid his Strikes. Or give up, for a Minor Victory.',
+    },
+    '3.3': {
+      image: IMG('RevolutionsAct3Part3A'),
+      name: 'Everything That Has a Beginning...',
+      objective:
+        "Send the Deletion Program: pay ®/⚔ equal to the next higher or lower number to move the Time Track; when it matches the leftmost Smith's ⚔ (3), that Smith is deleted. At the end of each turn your hand, play area, and discard pile are deleted. Defeat all five Smiths!",
+    },
   },
 };
 

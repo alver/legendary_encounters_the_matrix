@@ -1,4 +1,5 @@
-// scripts.ts — per-card behaviour for every card in the first film.
+// scripts.ts — per-card behaviour for every card in the first film, plus the
+// merge point for the Reloaded / Revolutions script modules.
 //
 // Hooks (all may be async):
 //   onPlay(c)          — when you play the Hero
@@ -46,46 +47,12 @@ import {
   subTime,
   ui,
 } from './game';
+import { AVATAR_SCRIPTS_RELREV, SCRIPTS_RELOADED } from './scriptsReloaded';
+import { SCRIPTS_REVOLUTIONS } from './scriptsRevolutions';
+import { optionalFreeScan, pickHealStrike } from './scriptsShared';
 import type { AvatarScript, CardInstance, ScriptHooks } from './types';
 
 /* ─────────── shared helpers ─────────── */
-async function pickHealStrike(title: string, filter?: (c: CardInstance) => boolean) {
-  const opts = P().strikes.filter(filter || (() => true));
-  if (!opts.length) {
-    log('No Strike to heal.');
-    return false;
-  }
-  const sel = await ui().pick(opts, {
-    title,
-    prompt: 'Choose a Strike to heal.',
-    min: 0,
-    max: 1,
-    skippable: true,
-  });
-  if (!sel.length) return false;
-  healStrike(sel[0]);
-  return true;
-}
-async function optionalFreeScan(prompt: string) {
-  const fd = g()
-    .matrixRow.map((c, i) => (c && !c.faceUp ? i : -1))
-    .filter(i => i >= 0);
-  if (!fd.length) return false;
-  const sel = await ui().pick(
-    fd.map(i => ({ uid: 'sp' + i, id: null, spaceIdx: i })),
-    {
-      title: 'Scan any space',
-      prompt,
-      min: 0,
-      max: 1,
-      skippable: true,
-      spaces: true,
-    },
-  );
-  if (!sel.length) return false;
-  await freeScan(sel[0].spaceIdx);
-  return true;
-}
 function trainingFight(c: CardInstance) {
   // "Fight: discard the top card of the Strike deck; 2+ damage defeats it."
   const sc = strikeDeckPop();
@@ -133,8 +100,8 @@ function agentFightReplace(c: CardInstance) {
   else g().combatZone.splice(Math.min(spot!.cz!, g().combatZone.length), 0, c);
 }
 
-/* ═══════════════ SCRIPTS ═══════════════ */
-export const SCRIPTS: Record<string, ScriptHooks> = {
+/* ═══════════════ SCRIPTS (The Matrix) ═══════════════ */
+const SCRIPTS_MATRIX: Record<string, ScriptHooks> = {
   /* ── Starters / Free Your Mind is handled by the engine ── */
 
   /* ── Morpheus (The Matrix) ── */
@@ -802,6 +769,12 @@ export const SCRIPTS: Record<string, ScriptHooks> = {
   },
 };
 
+export const SCRIPTS: Record<string, ScriptHooks> = {
+  ...SCRIPTS_MATRIX,
+  ...SCRIPTS_RELOADED,
+  ...SCRIPTS_REVOLUTIONS,
+};
+
 /* ═══════════════ Avatar Act abilities ═══════════════ */
 async function switchLook(drawAfter: boolean) {
   const top = deckTop();
@@ -853,7 +826,7 @@ async function apocScan(anySpace: boolean) {
   if (ok) await freeScan(i);
 }
 
-export const AVATAR_SCRIPTS: Record<string, AvatarScript> = {
+const AVATAR_SCRIPTS_MATRIX: Record<string, AvatarScript> = {
   AvatarThomasAnderson: {
     1: () => log('Thomas Anderson does not know yet… (no Act 1 ability)'),
   },
@@ -925,4 +898,9 @@ export const AVATAR_SCRIPTS: Record<string, AvatarScript> = {
     2: () => mouseHeal(2),
     3: () => mouseHeal(3),
   },
+};
+
+export const AVATAR_SCRIPTS: Record<string, AvatarScript> = {
+  ...AVATAR_SCRIPTS_MATRIX,
+  ...AVATAR_SCRIPTS_RELREV,
 };

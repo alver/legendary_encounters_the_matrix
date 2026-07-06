@@ -60,6 +60,7 @@ export function Card({
             src={D(c).image}
             alt={D(c).name}
             draggable={false}
+            style={c.flipped ? { transform: 'rotate(180deg)' } : undefined}
             onMouseEnter={() => showPreview(D(c).image)}
             onMouseLeave={hidePreview}
           />

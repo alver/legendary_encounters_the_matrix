@@ -5,7 +5,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { getG, newGame, startTurn } from '../game';
-import type { GameOptions } from '../types';
+import type { GameOptions, Movie } from '../types';
 import { Board } from './Board';
 import { EngineModals, GameOverModal, HowToModal } from './Modals';
 import { PlayerStrip } from './PlayerStrip';
@@ -41,10 +41,10 @@ export function App() {
   const [setupOpen, setSetupOpen] = useState(() => !getG());
   const [howtoOpen, setHowtoOpen] = useState(false);
 
-  function startGame(avatarId: string, options: GameOptions) {
+  function startGame(avatarId: string, options: GameOptions, movie: Movie) {
     setSetupOpen(false);
     clearSnapshots();
-    newGame(avatarId, options);
+    newGame(avatarId, options, movie);
     notify();
     void startTurn();
   }

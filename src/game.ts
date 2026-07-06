@@ -7,6 +7,7 @@
 // behaviour lives in src/scripts.ts.
 
 import { MX } from './version';
+import { CARD_IMAGE_URLS } from './cardImages';
 import {
   ACT_CARDS,
   AVATARS,
@@ -21,15 +22,45 @@ import {
 import { AVATAR_SCRIPTS, SCRIPTS } from './scripts';
 import type {
   AvatarDef,
+  CardClass,
   CardDef,
   CardInstance,
   GameOptions,
   GameState,
+  Movie,
   PlayerState,
   StrikeOpts,
   TurnFlags,
   UIPort,
 } from './types';
+
+/* ═══════════ per-film setup (rules.md "Playing through the Films") ═══════════ */
+interface MovieSetup {
+  title: string;
+  zionGroups: string[];
+  actGroups: [string, string, string];
+  inevitableId: string;
+}
+export const MOVIE_SETUP: Record<Movie, MovieSetup> = {
+  matrix: {
+    title: 'The Matrix',
+    zionGroups: ['Morpheus', 'Trinity', 'Tank', 'NebCrew'],
+    actGroups: ['Act1', 'Act2', 'Act3'],
+    inevitableId: 'Act3HeIsTheOne_7A',
+  },
+  reloaded: {
+    title: 'The Matrix Reloaded',
+    zionGroups: ['NeoReloaded', 'MorpheusRelRev', 'TrinityRelRev', 'ShipCaptains'],
+    actGroups: ['RelAct1', 'RelAct2', 'RelAct3'],
+    inevitableId: 'Act3TheSource_6A',
+  },
+  revolutions: {
+    title: 'The Matrix Revolutions',
+    zionGroups: ['NeoRevolutions', 'Niobe', 'Link', 'DefendersOfZion'],
+    actGroups: ['RevAct1', 'RevAct2', 'RevAct3'],
+    inevitableId: 'Act3EverythingThatHasABeginning_6A',
+  },
+};
 
 /* ═══════════ state container (ESM: importers can't reassign a binding) ═══════════ */
 let G: GameState | null = null;
@@ -104,6 +135,8 @@ function findZone(uid: number): ZoneHit | null {
     cz: g().combatZone,
     ops: g().operations,
     rw: g().realWorldEnemies,
+    dockE: g().dockEnemies,
+    backdoor: g().backdoors,
     hand: P().hand,
     inPlay: P().inPlay,
     discard: P().discard,
@@ -114,6 +147,8 @@ function findZone(uid: number): ZoneHit | null {
   }
   if (g().attached.building && g().attached.building!.uid === uid)
     return { zone: 'attached', arr: null, i: -1, card: g().attached.building! };
+  const zb = g().zionBlocker;
+  if (zb && zb.uid === uid) return { zone: 'zionBlocker', arr: null, i: -1, card: zb };
   return null;
 }
 export function removeCard(uid: number): CardInstance | null {
@@ -123,19 +158,40 @@ export function removeCard(uid: number): CardInstance | null {
     g().attached.building = null;
     return f.card;
   }
-  if (f.zone === 'row') {
-    g().matrixRow[f.i] = null;
+  if (f.zone === 'zionBlocker') {
+    g().zionBlocker = null;
+    return f.card;
+  }
+  if (f.zone === 'row' || f.zone === 'dockE' || f.zone === 'backdoor') {
+    f.arr![f.i] = null;
     return f.card;
   }
   f.arr!.splice(f.i, 1);
   return f.card;
 }
 
+// All the classes a card instance counts as (Keymaker heroes pick theirs).
+export function cardClasses(c: CardInstance): CardClass[] {
+  const def = D(c);
+  if (def.clsAll) return ['I', 'R', 'S', 'U', 'T'];
+  const out: CardClass[] = [];
+  if (def.cls) out.push(def.cls);
+  if (c.chosenCls) out.push(c.chosenCls);
+  if (c.chosenCls2) out.push(c.chosenCls2);
+  return out;
+}
+// Count Heroes of a class in your play area (class-combo "per {X} Hero" texts).
+export function inPlayOfClass(cls: CardClass): number {
+  return P().inPlay.filter(c => cardClasses(c).includes(cls)).length;
+}
+
 /* ═══════════ setup ═══════════ */
-export function newGame(avatarId: string, options: GameOptions = {}) {
+export function newGame(avatarId: string, options: GameOptions = {}, movie: Movie = 'matrix') {
   uidCounter = 1;
+  const setup = MOVIE_SETUP[movie];
   G = {
     options,
+    movie,
     act: 1,
     part: 1,
     time: MX.TIME_TRACK_START,
@@ -146,6 +202,11 @@ export function newGame(avatarId: string, options: GameOptions = {}) {
     combatZone: [],
     operations: [],
     attached: { building: null },
+    backdoors: [null, null, null, null, null],
+    dockEnemies: [null, null, null, null, null],
+    zionBlocker: null,
+    flyLine: null,
+    oracleSmithDamage: 0,
     realWorldEnemies: [],
     defeatedEnemies: [],
     discardedCES: [],
@@ -165,6 +226,16 @@ export function newGame(avatarId: string, options: GameOptions = {}) {
       cypherRevealTurn: null,
       hesGoneUsed: false,
       noCoordUntilTurn: 0,
+      henchmenDefeated: 0,
+      keymakerInGame: false,
+      powerStationDone: false,
+      emergencyDone: false,
+      sourceDeadlineTurn: null,
+      merovingianDeal: false,
+      diggerDefeated: false,
+      flyLineDone: false,
+      baneDefeated: false,
+      strikeCapUntilTurn: 0,
     },
     turn: freshTurnFlags(),
     player: {
@@ -195,24 +266,27 @@ export function newGame(avatarId: string, options: GameOptions = {}) {
   }
   P().deck = shuffle(deck);
 
-  // Zion: the four Matrix-film Hero Groups.
+  // Zion: the film's four Hero Groups.
   const zion: string[] = [];
-  for (const grp of ['Morpheus', 'Trinity', 'Tank', 'NebCrew']) zion.push(...buildHeroGroup(grp));
+  for (const grp of setup.zionGroups) zion.push(...buildHeroGroup(grp));
   g().zion = shuffle(zion.map(mk));
   for (let i = 0; i < 5; i++) refillDock(i);
 
   // Matrix Deck: Act1 on top, Act2, Act3, Inevitable at the very bottom.
   // (deck array: last element = top)
   const pots = () => (options.systemCards ? buildSystemCards(options.systemCards) : []);
-  const a3 = shuffle([...buildActMini('Act3'), ...pots()]).map(mk);
-  const a2 = shuffle([...buildActMini('Act2'), ...pots()]).map(mk);
-  const a1 = shuffle([...buildActMini('Act1'), ...pots()]).map(mk);
-  const inev = mk('Act3HeIsTheOne_7A');
+  const a3 = shuffle([...buildActMini(setup.actGroups[2]), ...pots()]).map(mk);
+  const a2 = shuffle([...buildActMini(setup.actGroups[1]), ...pots()]).map(mk);
+  const a1 = shuffle([...buildActMini(setup.actGroups[0]), ...pots()]).map(mk);
+  const inev = mk(setup.inevitableId);
   inev.faceUp = true;
   g().matrixDeck = [inev, ...a3, ...a2, ...a1];
 
   drawCards(MX.HAND_SIZE);
-  log(`— ${avatar().name} enters the game. Act 1 Part 1: What Is the Matrix? —`, 'act');
+  log(
+    `— ${avatar().name} enters ${setup.title}. Act 1 Part 1: ${ACT_CARDS[movie]['1.1'].name} —`,
+    'act',
+  );
   log(
     avatarId === 'AvatarThomasAnderson'
       ? 'The Matrix has you… You start IN the Matrix, Free Your Mind out of play.'
@@ -228,16 +302,28 @@ function freshTurnFlags(): TurnFlags {
     coordUsed: false,
     gainedHovercraft: false,
     enemiesDefeated: 0,
+    heroesDefeated: 0,
     kungfuCZBonus: 0,
+    gunneryRWBonus: 0,
     avoidMatrixEnemyStrikes: false,
+    avoidNextStrikes: 0,
+    avoidAllStrikes: false,
+    enemyDebuff: 0,
     skipStrikePhase: false,
     noScan: false,
+    noMatrixMove: false,
     drawPenalty: 0,
     noMoreStrikes: false,
+    strikesDrawn: 0,
+    smithsFought: 0,
+    timeMode: null,
+    deckTopGains: 0,
   };
 }
 
 export function refillDock(i: number) {
+  // A Sentinel Swarm squatting the space or the Digger on Zion stops refills.
+  if (g().dockEnemies[i] || g().zionBlocker) return;
   if (!g().dock[i] && g().zion.length) g().dock[i] = g().zion.pop()!;
 }
 
@@ -254,12 +340,26 @@ export function drawCards(n: number): CardInstance[] {
     P().hand.push(c);
     drawn.push(c);
   }
-  // "When you draw this, discard it" — resolve Bugs after the whole batch.
+  // "When you draw this…" effects — resolved after the whole batch.
   for (const c of drawn.slice()) {
     if (D(c).name === 'Bug') {
       P().hand.splice(P().hand.indexOf(c), 1);
       P().discard.push(c);
       log('You drew a Bug — it clogs your deck and is discarded.');
+    } else if (c.id === 'Act1TheOraclesCall_6') {
+      // The Machines Are Digging: draw another card, discard this, dig Zion.
+      P().hand.splice(P().hand.indexOf(c), 1);
+      P().discard.push(c);
+      log('You drew The Machines Are Digging!', 'bad');
+      drawCards(1);
+      zionDig();
+      if (g().gameOver) return drawn;
+    } else if (c.id === 'Act2FreeTheKeymaker_6') {
+      // Cause and Effect: defeat it and draw three cards.
+      P().hand.splice(P().hand.indexOf(c), 1);
+      g().discardedCES.push(c);
+      log('Cause and Effect — you defeat it and draw three cards.', 'good');
+      drawCards(3);
     }
   }
   return drawn;
@@ -281,7 +381,7 @@ export function subTime(n: number) {
   if (g().time <= 0)
     gameOver(false, 'Time has run out', 'The Machines win. The resistance is crushed.');
 }
-function gameOver(win: boolean, title: string, sub: string) {
+export function gameOver(win: boolean, title: string, sub: string) {
   if (g().gameOver) return;
   g().gameOver = { win, title, sub };
   g().phase = 'gameover';
@@ -317,13 +417,45 @@ export async function drawStrike(opts: StrikeOpts = {}): Promise<CardInstance | 
     log('No more Strikes can be drawn this turn.');
     return null;
   }
+  // Go Up, Over Them: at most one Strike per turn (not an "avoid").
+  if (g().turnNo < g().flags.strikeCapUntilTurn && g().turn.strikesDrawn >= 1) {
+    log('Go Up, Over Them — no more Strikes this turn.', 'good');
+    return null;
+  }
+  if (!opts.unavoidable && g().turn.avoidAllStrikes) {
+    log('You Cannot Stop Him, But I Can — the Strike is avoided!', 'good');
+    return null;
+  }
+  if (!opts.unavoidable && g().turn.avoidNextStrikes > 0) {
+    g().turn.avoidNextStrikes--;
+    log("I'll Handle Them — the Strike is avoided!", 'good');
+    return null;
+  }
   if (!opts.unavoidable && g().turn.avoidMatrixEnemyStrikes && sourceInMatrix(opts.source)) {
     log('You Move Like They Do — the Strike is avoided!', 'good');
     return null;
   }
-  const c = strikeDeckPop();
+  let c = strikeDeckPop();
   if (!c) return null;
   c.faceUp = true;
+  // Wild Swing: you may discard the first Strike you draw and draw a new one.
+  if (opts.wildSwing) {
+    await UI.showCard(D(c).image, `Strike: ${D(c).name}`);
+    const redo = await UI.confirmBox(
+      'Wild Swing',
+      `You drew ${D(c).name}${D(c).damage ? ` (${D(c).damage} damage)` : ''}. Discard it and draw a new Strike? (You must keep the new one.)`,
+      'Draw a new one',
+      'Keep it',
+    );
+    if (redo) {
+      g().strikeDiscard.push(c);
+      log(`Wild Swing: you dodge ${D(c).name} and draw a new Strike.`);
+      c = strikeDeckPop();
+      if (!c) return null;
+      c.faceUp = true;
+    }
+  }
+  g().turn.strikesDrawn++;
   const s = SCRIPTS[c.id];
   log(`💥 Strike: ${D(c).name}${D(c).damage ? ` (${D(c).damage} damage)` : ''}`, 'bad');
   if (s && s.strikeResolve) {
@@ -337,7 +469,7 @@ export async function drawStrike(opts: StrikeOpts = {}): Promise<CardInstance | 
 async function checkPlayerDefeat() {
   if (g().gameOver) return;
   if (totalDamage() < P().health) return;
-  if (g().act === 3 && g().part === 3 && !g().flags.hesGoneUsed) {
+  if (g().movie === 'matrix' && g().act === 3 && g().part === 3 && !g().flags.hesGoneUsed) {
     await hesGone();
     return;
   }
@@ -361,6 +493,15 @@ async function hesGone() {
     'act',
   );
 }
+// The Machines dig toward Zion: defeat its top 5 Heroes; empty Zion = loss.
+export function zionDig() {
+  const dug = g().zion.splice(Math.max(0, g().zion.length - 5), 5);
+  g().defeatedHeroes.push(...dug);
+  log(`The Machines are digging — the top ${dug.length} Heroes of Zion are destroyed!`, 'bad');
+  if (!g().zion.length)
+    gameOver(false, 'Zion has fallen', 'The diggers broke through. All players are defeated.');
+}
+
 export function healStrike(c: CardInstance) {
   const i = P().strikes.indexOf(c);
   if (i < 0) return;
@@ -378,6 +519,25 @@ export function defeatEnemy(c: CardInstance) {
     g().flags.trainingDefeated++;
     log(`Training complete (${g().flags.trainingDefeated}/7): ${D(c).name}.`, 'good');
   }
+  // Objective bookkeeping that must catch EVERY defeat path (fights, EMP,
+  // Burn It Link, Fly the Mechanical Line…), not just actFight.
+  if (c.id === 'Act2TheBattleOfZion_3') g().flags.diggerDefeated = true;
+  if (c.id === 'Act3EverythingThatHasABeginning_3') g().flags.baneDefeated = true;
+  if (c.id === 'Act2FreeTheKeymaker_3') {
+    g().flags.henchmenDefeated++;
+    log(`Merovingian's Henchmen defeated: ${g().flags.henchmenDefeated}/5.`, 'good');
+    if (g().flags.henchmenDefeated === 5) {
+      // Defeat him wherever he is — even still hidden in the Matrix deck.
+      const deckIdx = g().matrixDeck.findIndex(x => x.id === 'Act2FreeTheKeymaker_2');
+      if (deckIdx >= 0) g().defeatedEnemies.push(...g().matrixDeck.splice(deckIdx, 1));
+      const mero = [...g().combatZone, ...g().matrixRow.filter(x => x !== null)].find(
+        x => x!.id === 'Act2FreeTheKeymaker_2',
+      );
+      if (mero) defeatEnemy(mero);
+      if (deckIdx >= 0 || mero)
+        log('His Henchmen are gone — THE MEROVINGIAN is defeated!', 'act');
+    }
+  }
 }
 export function defeatPlayerCard(c: CardInstance, fromArr?: CardInstance[] | null) {
   const arr = fromArr || null;
@@ -388,6 +548,7 @@ export function defeatPlayerCard(c: CardInstance, fromArr?: CardInstance[] | nul
   const t = D(c).type;
   if (t === 'event') g().discardedCES.push(c);
   else g().defeatedHeroes.push(c);
+  g().turn.heroesDefeated++;
   log(`Defeated from your cards: ${D(c).name}.`);
 }
 
@@ -396,7 +557,39 @@ export function gainCard(c: CardInstance, dest: 'discard' | 'hand' | 'deckTop' =
   if (dest === 'discard') P().discard.push(c);
   else if (dest === 'hand') P().hand.push(c);
   else if (dest === 'deckTop') P().deck.push(c);
-  if (D(c).type === 'hovercraft') g().turn.gainedHovercraft = true;
+  if (D(c).type === 'hovercraft') {
+    g().turn.gainedHovercraft = true;
+    advanceFlyLine();
+  }
+}
+
+// Fly the Mechanical Line: while in the Real World, each Hovercraft you gain
+// or play moves the Challenge one space right; below Zion it completes.
+export function advanceFlyLine() {
+  const fl = g().flyLine;
+  if (!fl || P().rsi !== 'real') return;
+  fl.pos++;
+  if (fl.pos <= 4) {
+    log(`Fly the Mechanical Line: the Hovercraft advances (${fl.pos + 1}/6).`, 'good');
+    return;
+  }
+  g().flyLine = null;
+  g().discardedCES.push(fl.card);
+  g().flags.flyLineDone = true;
+  log('FLY THE MECHANICAL LINE completed — the line is cleared!', 'act');
+  // "…then defeat all Machine Enemies." (all you can see in play)
+  const zb = g().zionBlocker;
+  const machines: CardInstance[] = [
+    ...g().matrixRow.filter((x): x is CardInstance => !!x && x.faceUp),
+    ...g().combatZone,
+    ...g().realWorldEnemies,
+    ...g().dockEnemies.filter((x): x is CardInstance => !!x),
+    ...(zb ? [zb] : []),
+  ].filter(x => D(x).type === 'enemy' && D(x).descriptor === 'Machine');
+  for (const m of machines) {
+    defeatEnemy(m);
+    log(`${D(m).name} is destroyed!`, 'good');
+  }
 }
 
 /* ═══════════ the Matrix Row ═══════════ */
@@ -406,13 +599,28 @@ export function killPhone(idx: number) {
     log(`☎ The phone in the ${MX.ROW_NAMES[idx]} is destroyed for the rest of the game!`, 'bad');
   }
 }
-async function placeIntoRow(c: CardInstance, idx: number) {
+export async function placeIntoRow(c: CardInstance, idx: number) {
   if (g().gameOver) return;
+  // Club Hel Guard: each time it moves (already face up), it flips 180°.
+  if (c.faceUp && D(c).kw.includes('Flip180')) {
+    c.flipped = !c.flipped;
+    log(`${D(c).name} flips ${c.flipped ? 'upside down (2 ⚔)' : 'right-side up (4 ⚔)'}.`);
+  }
+  // "If this card would enter the Matrix Row, put it into the Combat Zone."
+  if (D(c).kw.includes('EnterCZ')) {
+    await enterCombatZone(c);
+    return;
+  }
   if (idx < 0) {
     await enterCombatZone(c);
     return;
   }
   const cur = g().matrixRow[idx];
+  // Stationary cards never move: the moving card slides past them instead.
+  if (cur && D(cur).kw.includes('Stationary')) {
+    await placeIntoRow(c, idx - 1);
+    return;
+  }
   g().matrixRow[idx] = c;
   if (isInev(c)) {
     if (c.id === 'Act3HeIsTheOne_7A') {
@@ -460,6 +668,24 @@ export async function startTurn() {
   g().turnEnding = false;
   g().phase = 'matrix';
   log(`— Turn ${g().turnNo} —`, 'turn');
+  // Mobil Ave: at the start of your next turn, if still in Operations, move to
+  // the Matrix. (Reloaded 3.2 pins you in Operations with the Architect.)
+  if (P().rsi === 'ops' && !(g().movie === 'reloaded' && g().act === 3 && g().part === 2)) {
+    P().rsi = 'matrix';
+    log('The Trainman relents — you leave Mobil Ave and return to the Matrix.');
+  }
+  // The Source: once one of the three Challenges is completed, the other two
+  // must be completed before your next turn — or all players are defeated.
+  const deadline = g().flags.sourceDeadlineTurn;
+  if (g().movie === 'reloaded' && deadline != null && g().turnNo >= deadline) {
+    gameOver(
+      false,
+      'The window has closed',
+      'The emergency system reactivates and the door to the Source seals. All players are defeated.',
+    );
+    UI.render();
+    return;
+  }
   UI.render();
   await matrixPhase();
   if (g().gameOver) {
@@ -538,15 +764,23 @@ async function strikePhase() {
     if (g().gameOver) return;
     if (!c) continue;
     const def = D(c);
+    const s = SCRIPTS[c.id];
     if (isInev(c)) {
       log('The Sound of Inevitability…', 'bad');
       subTime(1);
       continue;
     }
-    if (def.type !== 'enemy') continue;
-    const s = SCRIPTS[c.id];
+    if (def.type !== 'enemy') {
+      // e.g. Crisis Meeting: "Combat Zone: subtract 1 from the Time Track."
+      if (s && s.strike) await s.strike(c);
+      continue;
+    }
     if (s && s.noStrike) {
       log(`${def.name} doesn't strike.`);
+      continue;
+    }
+    if (c.buyTimeTurn === g().turnNo) {
+      log(`${def.name} was distracted (Buy Time) — it doesn't strike this turn.`, 'good');
       continue;
     }
     const times = def.kw.includes('DoubleStrike') ? 2 : 1;
@@ -564,9 +798,32 @@ async function strikePhase() {
       }
     }
   }
+  // Real World enemies (next to your Avatar, in the Dock, on Zion) strike the
+  // player wherever they are. (The first film's Real World enemies don't strike.)
+  const zb = g().zionBlocker;
+  const rwEnemies: CardInstance[] = [
+    ...g().realWorldEnemies,
+    ...g().dockEnemies.filter((x): x is CardInstance => !!x),
+    ...(zb ? [zb] : []),
+  ];
+  for (const c of rwEnemies) {
+    if (g().gameOver) return;
+    if (D(c).type !== 'enemy') continue;
+    const s = SCRIPTS[c.id];
+    if (s && s.noStrike) continue;
+    const times = D(c).kw.includes('DoubleStrike') ? 2 : 1;
+    for (let t = 0; t < times && !g().gameOver; t++) {
+      if (s && s.strike) {
+        await s.strike(c);
+        continue;
+      }
+      log(`${D(c).name} strikes you!`, 'bad');
+      await enemyStrikesPlayer(c);
+    }
+  }
 }
 export async function enemyStrikesPlayer(c: CardInstance) {
-  const drawn = await drawStrike({ source: c });
+  const drawn = await drawStrike({ source: c, wildSwing: D(c).kw.includes('WildSwing') });
   const s = SCRIPTS[c.id];
   if (drawn && s && s.afterStrike) await s.afterStrike(c, drawn);
 }
@@ -588,6 +845,26 @@ async function cleanupPhase() {
   if (P().avatarId === 'AvatarThomasAnderson' && P().rsi === 'real') {
     P().rsi = 'matrix';
     log('The Matrix has you — Thomas Anderson is pulled back into the Matrix.');
+  }
+  // Revolutions finale: the Deletion Program deletes your hand, play area,
+  // and discard pile before you draw a new hand.
+  if (g().movie === 'revolutions' && g().act === 3 && g().part === 3) {
+    const deleted = [...P().hand.splice(0), ...P().inPlay.splice(0), ...P().discard.splice(0)];
+    for (const c of deleted) {
+      if (D(c).type === 'event') g().discardedCES.push(c);
+      else g().defeatedHeroes.push(c);
+    }
+    if (deleted.length)
+      log(`The Deletion Program consumes ${deleted.length} of your cards.`, 'bad');
+    if (!P().deck.length) {
+      gameOver(
+        false,
+        'Deleted',
+        'The Deletion Program consumes the last of you before the Smiths fall.',
+      );
+      UI.render();
+      return;
+    }
   }
   // Extra draws from "Your Men Are Already Dead" (each copy in play).
   let bonus = 0;
@@ -617,9 +894,204 @@ export async function beginPart(act: number, part: number) {
   g().act = act;
   g().part = part;
   const key = `${act}.${part}`;
-  log(`— Begin Act ${act} Part ${part}: ${ACT_CARDS[key].name} —`, 'act');
-  await UI.showCard(ACT_CARDS[key].image, `Act ${act} Part ${part} — ${ACT_CARDS[key].name}`);
+  const actDef = ACT_CARDS[g().movie][key];
+  log(`— Begin Act ${act} Part ${part}: ${actDef.name} —`, 'act');
+  await UI.showCard(actDef.image, `Act ${act} Part ${part} — ${actDef.name}`);
 
+  if (g().movie === 'matrix') await beginPartMatrix(key, prevAct);
+  if (g().movie === 'reloaded') await beginPartReloaded(key);
+  if (g().movie === 'revolutions') await beginPartRevolutions(key);
+  g().turnEnding = true; // skip the rest of the Action + Strike Phases
+}
+
+async function beginPartRevolutions(key: string) {
+  if (key === '1.2') {
+    // Shuffle the 14 Seraph Heroes and the Dock into Zion; the deal is made.
+    const seraph = buildHeroGroup('Seraph').map(mk);
+    const dockCards: CardInstance[] = [];
+    for (let i = 0; i < 5; i++) {
+      const dc = g().dock[i];
+      if (dc) {
+        dockCards.push(dc);
+        g().dock[i] = null;
+      }
+    }
+    g().zion.push(...seraph, ...dockCards);
+    shuffle(g().zion);
+    for (let i = 0; i < 5; i++) refillDock(i);
+    g().flags.merovingianDeal = true;
+    log(
+      'The 14 SERAPH Heroes are shuffled into Zion. The "deal" is made — THE MEROVINGIAN can now be fought (5 ⚔)!',
+      'act',
+    );
+  }
+  if (key === '2.2') {
+    // Retreat to the Temple.
+    P().rsi = 'real';
+    log('Everyone retreats to the Temple of Zion.', 'act');
+    const opts = g().dock.filter((x): x is CardInstance => !!x && (D(x).cost ?? 0) <= 4);
+    if (opts.length) {
+      const sel = await UI.pick(opts, {
+        title: 'The Temple',
+        prompt: 'Gain a Hero with cost 4 or less from the Dock.',
+        min: 0,
+        max: 1,
+        skippable: true,
+      });
+      if (sel.length) {
+        const i = g().dock.findIndex(x => x && x.uid === sel[0].uid);
+        g().dock[i] = null;
+        gainCard(sel[0]);
+        refillDock(i);
+        log(`You gain ${D(sel[0]).name}.`, 'good');
+      }
+    }
+    await beginPart(3, 1);
+    return;
+  }
+  if (key === '3.2') {
+    const giveUp = await UI.chooseOption(
+      'Machine City',
+      "You've made it to Machine City, but are exhausted and injured. Do you give up and end the game with a Minor Victory? Or do you enter the Matrix one last time?",
+      [
+        { label: 'Enter the Matrix one last time', value: false },
+        { label: 'Give up (Minor Victory)', value: true },
+      ],
+    );
+    if (giveUp) {
+      gameOver(
+        true,
+        'MINOR VICTORY',
+        'The machines accept a truce. Zion is spared — for now. But Smith is still out there…',
+      );
+      return;
+    }
+    // The Hovercrafts, the Dock, and Zion are gone. Everyone jacks in.
+    g().defeatedHeroes.push(...g().hovercraftStack.splice(0));
+    for (let i = 0; i < 5; i++) {
+      const dc = g().dock[i];
+      if (dc) {
+        g().defeatedHeroes.push(dc);
+        g().dock[i] = null;
+      }
+    }
+    g().defeatedHeroes.push(...g().zion.splice(0));
+    P().rsi = 'matrix';
+    log(
+      'No more recruits, no way back: you enter the Matrix ONE LAST TIME. Defeat the ORACLE-SMITH (each fight: 5 ⚔ → draw a Strike; its damage sticks to him; 15 total defeats him). Pay ® equal to your speed to avoid his Strikes.',
+      'act',
+    );
+  }
+  if (key === '3.3') {
+    // The Deletion Program: everything comes back together one last time.
+    P().deck.push(...P().hand.splice(0), ...P().inPlay.splice(0), ...P().discard.splice(0));
+    shuffle(P().deck);
+    log(
+      'You shuffle your hand, play area, and discard pile into your deck. SEND THE DELETION PROGRAM: pay ®/⚔ equal to the next higher or lower number to move the Time Track; at 3 the leftmost SMITH is deleted. At the end of each turn your hand, play area, and discard pile are deleted!',
+      'act',
+    );
+  }
+}
+
+async function beginPartReloaded(key: string) {
+  if (key === '1.2') {
+    // The Oracle has a gift for you… and Smith has an offer.
+    P().deck.push(mk('Act1TheOraclesCallExtra_1'));
+    log('I LOVE CANDY goes on top of your deck.', 'good');
+    for (let i = 0; i < 3; i++)
+      g().combatZone.unshift(Object.assign(mk('Act1TheOraclesCallExtra_2'), { faceUp: true }));
+    log('"Me… me… me." Three SMITHS enter the Combat Zone!', 'bad');
+    await beginPart(2, 1);
+    return;
+  }
+  if (key === '2.2') {
+    // Shuffle the 14 Keymaker Heroes and the Dock into Zion.
+    const keymaker = buildHeroGroup('Keymaker').map(mk);
+    const dockCards: CardInstance[] = [];
+    for (let i = 0; i < 5; i++) {
+      const dc = g().dock[i];
+      if (dc) {
+        dockCards.push(dc);
+        g().dock[i] = null;
+      }
+    }
+    g().zion.push(...keymaker, ...dockCards);
+    shuffle(g().zion);
+    for (let i = 0; i < 5; i++) refillDock(i);
+    g().flags.keymakerInGame = true;
+    log('The 14 KEYMAKER Heroes are shuffled into Zion. Find him and rescue him!', 'act');
+  }
+  if (key === '3.2') {
+    g().flags.sourceDeadlineTurn = null;
+    // The Inevitable card returns to the top of the Matrix deck.
+    const inevIdx = g().matrixRow.findIndex(isInev);
+    if (inevIdx >= 0) {
+      const inev = g().matrixRow[inevIdx]!;
+      g().matrixRow[inevIdx] = null;
+      g().matrixDeck.push(inev);
+      log('The Prophecy of The One slides back onto the Matrix deck.');
+    }
+    // The player who opened the door meets the Architect in Operations.
+    P().rsi = 'ops';
+    const arch = Object.assign(mk('Act3TheSourceExtra_1'), { faceUp: true });
+    g().operations.push(arch);
+    await UI.showCard(CARDS['Act3TheSourceExtra_1'].image, 'Meet the Architect');
+    const back = await UI.chooseOption(
+      'Meet the Architect',
+      '"The door to your right leads to the Source… the door to your left leads back to the Matrix." Fulfill the function of The One, or rely on the quintessential human delusion — hope?',
+      [
+        { label: 'Re-enter the Matrix (hope)', value: true },
+        { label: 'Return to the Source (Minor Victory)', value: false },
+      ],
+    );
+    if (!back) {
+      gameOver(
+        true,
+        'MINOR VICTORY',
+        'You return to the Source. Zion is destroyed, but humanity survives to be freed again.',
+      );
+      return;
+    }
+    P().rsi = 'matrix';
+    log(
+      'You choose HOPE and re-enter the Matrix. Clear the Matrix deck, Row, and Combat Zone down to the Inevitable card!',
+      'act',
+    );
+  }
+  if (key === '3.3') {
+    // Complete the Architect challenge; the fight moves to the Real World.
+    const arch = g().operations.find(x => x.id === 'Act3TheSourceExtra_1');
+    if (arch) {
+      removeCard(arch.uid);
+      g().discardedCES.push(arch);
+    }
+    P().rsi = 'real';
+    const inev =
+      g().combatZone.find(isInev) ??
+      g().matrixDeck.find(isInev) ??
+      g().matrixRow.find(isInev) ??
+      null;
+    if (inev) {
+      removeCard(inev.uid);
+      const di = g().matrixDeck.indexOf(inev);
+      if (di >= 0) g().matrixDeck.splice(di, 1);
+      inev.id = 'Act3TheSource_6B';
+      inev.faceUp = true;
+      g().realWorldEnemies.push(inev);
+    }
+    log(
+      'The Prophecy was a lie. TOW BOMB SENTINELS (20 ⚔) attack the Nebuchadnezzar in the Real World!',
+      'bad',
+    );
+    log(
+      'Once per turn: pay ⚔ to raise the Time Track (any number of times), OR gain ⚔ equal to the Time Track for each Neo Hero in play.',
+      'act',
+    );
+  }
+}
+
+async function beginPartMatrix(key: string, prevAct: number) {
+  const act = g().act;
   if (act >= 3 && prevAct < 3) {
     // Act 2's Agent Smith "leaves" when Act 3 begins.
     const smith = [...g().combatZone, ...g().matrixRow.filter(x => x !== null)].find(
@@ -694,12 +1166,20 @@ export async function beginPart(act: number, part: number) {
       'act',
     );
   }
-  g().turnEnding = true; // skip the rest of the Action + Strike Phases
 }
 
 /* ═══════════ player actions (called from the UI) ═══════════ */
 function assertAction(): boolean {
   return g().phase === 'action' && !g().gameOver;
+}
+
+const ALL_CLASSES: CardClass[] = ['I', 'R', 'S', 'U', 'T'];
+async function chooseClass(title: string, exclude?: CardClass): Promise<CardClass> {
+  return await UI.chooseOption(
+    title,
+    'Choose a class for this Hero this turn.',
+    ALL_CLASSES.filter(x => x !== exclude).map(x => ({ label: MX.CLASSES[x], value: x })),
+  );
 }
 
 export async function actPlayCard(uid: number) {
@@ -710,7 +1190,19 @@ export async function actPlayCard(uid: number) {
   const def = D(c);
   P().hand.splice(i, 1);
   P().inPlay.push(c);
-  const combo = !!(def.cls && g().turn.playedClasses[def.cls] > 0);
+  // Keymaker heroes pick their class(es) as they're played.
+  if (def.clsWild) {
+    c.chosenCls = await chooseClass(def.name);
+    if (/two different classes/.test(def.text))
+      c.chosenCls2 = await chooseClass(def.name, c.chosenCls);
+    log(
+      `${def.name} counts as ${cardClasses(c)
+        .map(x => MX.CLASSES[x])
+        .join(' + ')} this turn.`,
+    );
+  }
+  const classes = cardClasses(c);
+  const combo = classes.some(x => g().turn.playedClasses[x] > 0);
   P().R += def.recruit;
   P().A += def.attack;
   log(
@@ -720,10 +1212,11 @@ export async function actPlayCard(uid: number) {
   if (c.id === 'StarterFreeYourMind') await resolveActAbility();
   if (s && s.onPlay) await s.onPlay(c);
   if (combo && s && s.onCombo) {
-    log(`${MX.CLASSES[def.cls!]} class ability triggers!`, 'good');
+    log(`${classes.map(x => MX.CLASSES[x]).join('/')} class ability triggers!`, 'good');
     await s.onCombo(c);
   }
-  if (def.cls) g().turn.playedClasses[def.cls]++;
+  for (const x of classes) g().turn.playedClasses[x]++;
+  if (def.type === 'hovercraft') advanceFlyLine();
   await afterActionChecks();
 }
 
@@ -742,7 +1235,15 @@ export async function resolveActAbility() {
 
 export async function actCoordinate(uid: number) {
   if (!assertAction()) return;
-  if (g().turn.coordUsed) {
+  if (P().rsi === 'ops') {
+    log("You can't Coordinate while in Operations.");
+    return;
+  }
+  const i = P().hand.findIndex(c => c.uid === uid);
+  if (i < 0 || !D(P().hand[i]).kw.includes('Coordinate')) return;
+  // Ballard doesn't count toward the once-per-turn Coordinate limit.
+  const ballard = P().hand[i].id === 'ShipCaptains_4Uncommon';
+  if (g().turn.coordUsed && !ballard) {
     log('You already used your Coordinate discard this turn.');
     return;
   }
@@ -750,35 +1251,58 @@ export async function actCoordinate(uid: number) {
     log("You can't Coordinate this turn (What good is a phone call…).");
     return;
   }
-  const i = P().hand.findIndex(c => c.uid === uid);
-  if (i < 0 || !D(P().hand[i]).kw.includes('Coordinate')) return;
   const c = P().hand.splice(i, 1)[0];
   P().discard.push(c);
-  g().turn.coordUsed = true;
+  if (!ballard) g().turn.coordUsed = true;
   drawCards(1);
   log(`Solo Coordinate: you discard ${D(c).name} and draw a card.`);
   UI.render();
 }
 
+// The Kid: 1 less ® per Neo Hero in your play area.
+export function effectiveRecruitCost(c: CardInstance): number {
+  const def = D(c);
+  let cost = def.cost ?? 0;
+  if (def.id === 'DefendersOfZion_1Rare')
+    cost -= P().inPlay.filter(x => D(x).group?.startsWith('Neo')).length;
+  return Math.max(0, cost);
+}
+export function canRecruitFromHere(c: CardInstance): boolean {
+  // Digital Heroes can also be recruited from inside the Matrix.
+  return P().rsi === 'real' || (inMatrix() && D(c).kw.includes('DigitalHero'));
+}
 export async function actRecruitDock(i: number) {
   if (!assertAction()) return;
   const c = g().dock[i];
   if (!c) return;
   const def = D(c);
-  if (P().rsi !== 'real') {
-    log('You can only recruit while in the Real World.');
+  if (!canRecruitFromHere(c)) {
+    log('You can only recruit while in the Real World (Digital Heroes: also in the Matrix).');
     return;
   }
-  if (P().R < (def.cost ?? 0)) {
-    log(`Not enough ® (need ${def.cost}).`);
+  const cost = effectiveRecruitCost(c);
+  if (P().R < cost) {
+    log(`Not enough ® (need ${cost}).`);
     return;
   }
-  P().R -= def.cost ?? 0;
+  P().R -= cost;
   g().dock[i] = null;
-  gainCard(c);
+  gainCard(c, await gainDest(def.name));
   refillDock(i);
-  log(`You recruit ${def.name} (cost ${def.cost} ®).`, 'good');
+  log(`You recruit ${def.name} (cost ${cost} ®).`, 'good');
   await afterActionChecks();
+}
+// Towering Leap: once this turn, a gained Hero may go on top of your deck.
+async function gainDest(name: string): Promise<'discard' | 'deckTop'> {
+  if (g().turn.deckTopGains <= 0) return 'discard';
+  const top = await UI.confirmBox(
+    'Towering Leap',
+    `Put ${name} on top of your deck instead of your discard pile?`,
+    'Deck top',
+    'Discard pile',
+  );
+  if (top) g().turn.deckTopGains--;
+  return top ? 'deckTop' : 'discard';
 }
 export async function actRecruitHovercraft() {
   if (!assertAction()) return;
@@ -797,7 +1321,7 @@ export async function actRecruitHovercraft() {
   P().R -= 3;
   const c = g().hovercraftStack.pop()!;
   c.faceUp = true;
-  gainCard(c);
+  gainCard(c, await gainDest(D(c).name));
   log(`You recruit ${D(c).name}! (Hovercraft)`, 'good');
   await afterActionChecks();
 }
@@ -815,12 +1339,55 @@ export async function actScan(idx: number) {
     return;
   }
   const cost = MX.SCAN_COST[idx];
-  if (P().A < cost) {
+  // A Backdoor lets you pay ® instead of ⚔ to scan this space.
+  const backdoor = g().backdoors[idx];
+  let payR = false;
+  if (backdoor) {
+    const canA = P().A >= cost;
+    const canR = P().R >= cost;
+    if (!canA && !canR) {
+      log(`Not enough ⚔ or ® to scan (need ${cost}).`);
+      return;
+    }
+    payR =
+      canR &&
+      (!canA ||
+        (await UI.chooseOption('Backdoor', `Pay for the scan (${cost}) with:`, [
+          { label: `${cost} ® (through the Backdoor)`, value: true },
+          { label: `${cost} ⚔`, value: false },
+        ])));
+  } else if (P().A < cost) {
     log(`Not enough ⚔ to scan (need ${cost}).`);
     return;
   }
-  P().A -= cost;
-  log(`You scan the ${MX.ROW_NAMES[idx]} (−${cost} ⚔).`);
+  if (payR) {
+    P().R -= cost;
+    log(`You scan the ${MX.ROW_NAMES[idx]} through the Backdoor (−${cost} ®).`);
+    // Find the Oracle: instead of revealing, you may walk through.
+    const oracle = g().operations.find(x => x.id === 'Act1TheOraclesCall_5');
+    if (oracle) {
+      const walk = await UI.confirmBox(
+        'Find the Oracle',
+        'Instead of revealing that card, walk through the Backdoor and find the Oracle?',
+        'Walk through',
+        'Reveal the card',
+      );
+      if (walk) {
+        g().backdoors[idx] = null;
+        g().discardedCES.push(backdoor!);
+        removeCard(oracle.uid);
+        g().discardedCES.push(oracle);
+        log('You walk through the Backdoor… "I suppose the most obvious question is…"', 'act');
+        await beginPart(1, 2);
+        await afterActionChecks();
+        return;
+      }
+    }
+  } else {
+    P().A -= cost;
+    log(`You scan the ${MX.ROW_NAMES[idx]} (−${cost} ⚔).`);
+  }
+  c.scannedTurn = g().turnNo; // Mobile Bomb: revealed by a scan → holds fire
   await revealCard(c, 'row');
   await afterActionChecks();
 }
@@ -829,18 +1396,35 @@ export async function freeScan(idx: number) {
   const c = g().matrixRow[idx];
   if (!c || c.faceUp) return;
   log(`You scan the ${MX.ROW_NAMES[idx]} (free).`);
+  c.scannedTurn = g().turnNo;
   await revealCard(c, 'row');
 }
 
+// Is this enemy fought from the Real World? (next to your Avatar, squatting
+// the Dock, or sitting on Zion)
+function inRealWorldZone(uid: number): boolean {
+  const zb = g().zionBlocker;
+  return (
+    g().realWorldEnemies.some(x => x.uid === uid) ||
+    g().dockEnemies.some(x => x && x.uid === uid) ||
+    (!!zb && zb.uid === uid)
+  );
+}
 export function fightBlockReason(c: CardInstance): string | null {
   const def = D(c);
   const inRow = g().matrixRow.findIndex(x => x && x.uid === c.uid);
-  const inRW = g().realWorldEnemies.some(x => x.uid === c.uid);
+  const inRW = inRealWorldZone(c.uid);
   if (def.type !== 'enemy' || !c.faceUp) return 'not-an-enemy';
-  if (g().act === 3 && g().part === 3) return "You can't fight the Agents — become The One!";
+  if (g().movie === 'matrix' && g().act === 3 && g().part === 3)
+    return "You can't fight the Agents — become The One!";
   if (inRW) {
     if (P().rsi !== 'real') return 'You must be in the Real World to fight this Enemy.';
   } else if (!inMatrix()) return 'You must be in the Matrix to fight.';
+  const s = SCRIPTS[c.id];
+  if (s && s.fightBlock) {
+    const why = s.fightBlock(c);
+    if (why) return why;
+  }
   if (def.kw.includes('Unfightable') || def.defeat == null) return `${def.name} can't be fought.`;
   if (c.id === 'Act3HeIsTheOneExtra_9' && inRow >= 0 && inRow !== 0)
     return 'Agent Smith is Undefeatable unless you fight him in the Subway or the Combat Zone.';
@@ -857,8 +1441,11 @@ export function fightBlockReason(c: CardInstance): string | null {
 }
 export function effectiveFightCost(c: CardInstance): number {
   let cost = D(c).defeat ?? 0;
+  const s = SCRIPTS[c.id];
+  if (s && s.fightCost) cost = s.fightCost(c, cost);
   if (g().combatZone.some(x => x.uid === c.uid)) cost = Math.max(0, cost - g().turn.kungfuCZBonus);
-  return cost;
+  if (inRealWorldZone(c.uid)) cost = Math.max(0, cost - g().turn.gunneryRWBonus);
+  return Math.max(0, cost - g().turn.enemyDebuff);
 }
 export async function actFight(uid: number) {
   if (!assertAction()) return;
@@ -877,6 +1464,11 @@ export async function actFight(uid: number) {
     log(`I Know Kung Fu: −${g().turn.kungfuCZBonus} ⚔ on this fight.`, 'good');
     g().turn.kungfuCZBonus = 0;
   }
+  if (inRealWorldZone(c.uid) && g().turn.gunneryRWBonus) {
+    log(`Gunnery: −${g().turn.gunneryRWBonus} ⚔ on this fight.`, 'good');
+    g().turn.gunneryRWBonus = 0;
+  }
+  if (D(c).name === 'Smith') g().turn.smithsFought++;
   log(`You fight ${D(c).name} (−${cost} ⚔).`);
   const s = SCRIPTS[c.id];
   if (s && s.fight) {
@@ -896,7 +1488,12 @@ export async function actCompleteChallenge(uid: number) {
   const c = f.card;
   const def = D(c);
   if (def.type !== 'challenge' || !c.faceUp) return;
-  if (!inMatrix()) {
+  if (def.realWorld) {
+    if (P().rsi !== 'real') {
+      log('You must be in the Real World to complete this Challenge.');
+      return;
+    }
+  } else if (!inMatrix()) {
     log('You must be in the Matrix to complete Challenges.');
     return;
   }
@@ -934,7 +1531,16 @@ export async function actMove() {
     log('You already used your free move this turn.');
     return;
   }
+  if (P().rsi === 'ops') {
+    log("You can't use your free move to leave Operations.");
+    return;
+  }
   if (P().rsi === 'real') {
+    const why = enterMatrixBlockReason();
+    if (why) {
+      log(why);
+      return;
+    }
     P().rsi = 'matrix';
     g().turn.freeMoveUsed = true;
     log('You jack in — you are now IN THE MATRIX.', 'good');
@@ -973,9 +1579,20 @@ export function phoneAvailable(): number | null {
     if (!g().matrixRow[idx] && !g().flags.deadPhones[idx]) return idx;
   return null;
 }
+export function enterMatrixBlockReason(): string | null {
+  if (g().turn.noMatrixMove) return "Stranded — you can't enter the Matrix this turn.";
+  if (g().realWorldEnemies.some(c => D(c).name === 'Bane'))
+    return "Bane stands over your body — you can't enter the Matrix!";
+  if (g().movie === 'reloaded' && g().act === 3 && g().part === 3)
+    return 'The fight is in the Real World now.';
+  return null;
+}
 export function leaveMatrixBlockReason(): string | null {
-  if (g().act === 3 && g().part === 3)
+  if (g().movie === 'matrix' && g().act === 3 && g().part === 3)
     return "You can't leave the Matrix. You must become The One.";
+  if (g().movie === 'revolutions' && g().act === 3 && g().part >= 2)
+    return "You've entered the Matrix one last time — there is no way back.";
+  if (g().turn.noMatrixMove) return "Stranded — you can't leave the Matrix this turn.";
   if (g().combatZone.some(c => c.id === 'Act2KnowThyselfExtra_2'))
     return "Agent Smith is in the Combat Zone — players can't leave the Matrix!";
   return null;
@@ -983,11 +1600,13 @@ export function leaveMatrixBlockReason(): string | null {
 // Card-effect move to the Real World (no phone needed).
 export function effectMoveToRealWorld() {
   if (P().rsi === 'real') return;
-  const why = leaveMatrixBlockReason();
-  if (why) {
-    log(why);
-    return;
-  }
+  if (P().rsi === 'matrix') {
+    const why = leaveMatrixBlockReason();
+    if (why) {
+      log(why);
+      return;
+    }
+  } // from Operations: card effects CAN move you.
   P().rsi = 'real';
   log('A card effect moves you to the Real World.', 'good');
 }
@@ -1023,8 +1642,29 @@ export async function actEvade(uid: number) {
   await afterActionChecks();
 }
 
+// Buy Time 5®: distract an Agent so it won't strike this turn.
+export async function actBuyTime(uid: number) {
+  if (!assertAction()) return;
+  const f = findZone(uid);
+  if (!f) return;
+  const c = f.card;
+  if (!D(c).kw.includes('BuyTime') || c.buyTimeTurn === g().turnNo) return;
+  if (!inMatrix()) {
+    log('You must be in the Matrix to Buy Time.');
+    return;
+  }
+  if (P().R < 5) {
+    log('Not enough ® to Buy Time (need 5).');
+    return;
+  }
+  P().R -= 5;
+  c.buyTimeTurn = g().turnNo;
+  log(`You pay 5 ® to distract ${D(c).name} — it won't strike this turn.`, 'good');
+  await afterActionChecks();
+}
+
 export async function actRaiseTime() {
-  if (!assertAction() || !(g().act === 3 && g().part === 3)) return;
+  if (!assertAction() || g().movie !== 'matrix' || !(g().act === 3 && g().part === 3)) return;
   const cost = g().time + 1;
   if (g().time >= 10) return;
   if (P().A < cost) {
@@ -1105,7 +1745,7 @@ export async function actTalkOracle() {
 
 export async function actFreeNeo() {
   if (!assertAction()) return;
-  if (!(g().act === 1 && g().part === 2)) return;
+  if (g().movie !== 'matrix' || !(g().act === 1 && g().part === 2)) return;
   if (P().rsi !== 'real') {
     log('You must be in the Real World to free Neo.');
     return;
@@ -1132,8 +1772,90 @@ export async function actFreeNeo() {
   await afterActionChecks();
 }
 
+// Reloaded 2.2: while in the Matrix with a Keymaker Hero in play, rescue him.
+export async function actRescueKeymaker() {
+  if (!assertAction()) return;
+  if (g().movie !== 'reloaded' || !(g().act === 2 && g().part === 2)) return;
+  if (!inMatrix()) {
+    log('You must be in the Matrix to rescue the Keymaker.');
+    return;
+  }
+  if (!P().inPlay.some(c => D(c).group === 'Keymaker')) {
+    log('You need a Keymaker Hero in your play area.');
+    return;
+  }
+  log('THE KEYMAKER IS RESCUED! "We do only what we are meant to do."', 'act');
+  await beginPart(3, 1);
+  await afterActionChecks();
+}
+
+// Reloaded 3.3: once per turn, raise the Time Track with ⚔ (any number of
+// times) OR gain ⚔ equal to the Time Track for each Neo Hero in play.
+export async function actReloadedTime(mode: 'raise' | 'gain') {
+  if (!assertAction() || g().movie !== 'reloaded' || !(g().act === 3 && g().part === 3)) return;
+  if (g().turn.timeMode && g().turn.timeMode !== mode) {
+    log(`You already chose to ${g().turn.timeMode === 'raise' ? 'raise the Time Track' : 'gain ⚔'} this turn.`);
+    return;
+  }
+  if (mode === 'raise') {
+    const cost = g().time + 1;
+    if (g().time >= 10) {
+      log('The Time Track is already at 10.');
+      return;
+    }
+    if (P().A < cost) {
+      log(`Not enough ⚔ (need ${cost} to raise the Time Track to ${cost}).`);
+      return;
+    }
+    g().turn.timeMode = 'raise';
+    P().A -= cost;
+    g().time += 1;
+    log(`⚡ You pay ${cost} ⚔ — the Time Track rises to ${g().time}.`, 'act');
+  } else {
+    if (g().turn.timeMode === 'gain') {
+      log('You already gained ⚔ from the Time Track this turn.');
+      return;
+    }
+    const neos = P().inPlay.filter(c => D(c).group?.startsWith('Neo')).length;
+    if (!neos) {
+      log('You need a Neo Hero in your play area to channel the Time Track.');
+      return;
+    }
+    g().turn.timeMode = 'gain';
+    const gain = g().time * neos;
+    P().A += gain;
+    log(
+      `⚡ Neo channels the Source: +${gain} ⚔ (Time Track ${g().time} × ${neos} Neo Hero${neos > 1 ? 'es' : ''}).`,
+      'act',
+    );
+  }
+  await afterActionChecks();
+}
+
+// Revolutions 3.3 — Send the Deletion Program: pay ®/⚔ equal to the next
+// higher or lower number to move the Time Track there.
+export async function actDeletionMove(dir: 1 | -1) {
+  if (!assertAction() || g().movie !== 'revolutions' || !(g().act === 3 && g().part === 3)) return;
+  const target = g().time + dir;
+  if (target < 1 || target > 10) {
+    log("The Time Track can't move there.");
+    return;
+  }
+  if (P().R + P().A < target) {
+    log(`Not enough ® + ⚔ (need ${target} total to move the Time Track to ${target}).`);
+    return;
+  }
+  // Pay with ® first, keeping ⚔ (only ® and ⚔ exist to pay with in solo).
+  const fromR = Math.min(P().R, target);
+  P().R -= fromR;
+  P().A -= target - fromR;
+  g().time = target;
+  log(`⚡ The Deletion Program hums — the Time Track moves to ${g().time}.`, 'act');
+  await afterActionChecks(); // the Smith check lives there
+}
+
 export async function actMinorVictory() {
-  if (!assertAction() || !(g().act === 3 && g().part === 2)) return;
+  if (!assertAction() || g().movie !== 'matrix' || !(g().act === 3 && g().part === 2)) return;
   const ok = await UI.confirmBox(
     'Run for it?',
     'An Agent has destroyed your exit. Do you run, and end the game with a MINOR VICTORY? Or are you beginning to believe?',
@@ -1194,8 +1916,52 @@ async function afterActionChecks() {
     return;
   }
   // Act 1 Part 1 → Part 2 when both Challenges are done.
-  if (g().act === 1 && g().part === 1 && g().flags.truthDone && g().flags.rabbitDone) {
+  if (g().movie === 'matrix' && g().act === 1 && g().part === 1 && g().flags.truthDone && g().flags.rabbitDone) {
     await beginPart(1, 2);
+  }
+  // Reloaded 3.2 → 3.3 when only the Inevitable card is left in the Matrix.
+  if (g().movie === 'reloaded' && g().act === 3 && g().part === 2 && P().rsi === 'matrix') {
+    const left = [
+      ...g().matrixDeck,
+      ...g().matrixRow.filter((x): x is CardInstance => !!x),
+      ...g().combatZone,
+    ];
+    if (left.length === 1 && isInev(left[0])) await beginPart(3, 3);
+  }
+  // Revolutions 2.1 → 2.2 once the Digger and the Mechanical Line are done.
+  if (
+    g().movie === 'revolutions' &&
+    g().act === 2 &&
+    g().part === 1 &&
+    g().flags.diggerDefeated &&
+    g().flags.flyLineDone
+  ) {
+    await beginPart(2, 2);
+  }
+  // Revolutions finale: while the Time Track equals the leftmost Smith's ⚔,
+  // that Smith is deleted; all five gone = Major Victory.
+  if (g().movie === 'revolutions' && g().act === 3 && g().part === 3 && !g().gameOver) {
+    for (;;) {
+      const i = g().matrixRow.findIndex(
+        x => x && x.id === 'Act3EverythingThatHasABeginning_2',
+      );
+      if (i < 0) {
+        await UI.showCard(
+          CARD_IMAGE_URLS['RevolutionsAct3Part3B'] ?? ACT_CARDS.revolutions['3.3'].image,
+          'It was inevitable',
+        );
+        gameOver(
+          true,
+          'MAJOR VICTORY — the war is over',
+          '"You were right, Smith. It was inevitable." The Deletion Program destroys all the Smiths. The machines leave Zion, and this peace will last as long as it can.',
+        );
+        break;
+      }
+      const smith = g().matrixRow[i]!;
+      if ((D(smith).defeat ?? 0) !== g().time) break;
+      defeatEnemy(smith);
+      log('The Deletion Program surges — the leftmost SMITH is deleted!', 'act');
+    }
   }
   if (g().turnEnding) {
     g().turnEnding = false;

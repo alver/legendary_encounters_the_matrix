@@ -17,16 +17,21 @@ import {
   actPending,
   actPlayCard,
   actRaiseTime,
+  actDeletionMove,
   actRecruitDock,
   actRecruitHovercraft,
+  actReloadedTime,
+  actRescueKeymaker,
   actScan,
+  canRecruitFromHere,
+  effectiveRecruitCost,
   fightBlockReason,
   g,
   inMatrix,
   newGame,
   startTurn,
 } from '../src/game';
-import type { GameOverState, UIPort } from '../src/types';
+import type { CardInstance, GameOverState, Movie, UIPort } from '../src/types';
 
 /* ── UI stub: auto-answers every prompt ── */
 export const botUI: UIPort = {
@@ -64,13 +69,51 @@ async function botActionPhase(cheat: boolean) {
       await actPending(0);
       continue;
     }
-    // 3. finale: raise the time track
-    if (g().act === 3 && g().part === 3 && g().time < 10 && P().A >= g().time + 1) {
+    // 3. finale: raise the time track (The Matrix)
+    if (
+      g().movie === 'matrix' &&
+      g().act === 3 &&
+      g().part === 3 &&
+      g().time < 10 &&
+      P().A >= g().time + 1
+    ) {
       await actRaiseTime();
       continue;
     }
-    // 4. real-world enemies (Cypher!)
-    for (const c of g().realWorldEnemies) {
+    // 3b. Reloaded finale: channel the Time Track through Neo Heroes
+    if (g().movie === 'reloaded' && g().act === 3 && g().part === 3) {
+      const neos = P().inPlay.filter(x => D(x).group?.startsWith('Neo')).length;
+      if (!g().turn.timeMode && neos && g().time > 0) {
+        await actReloadedTime('gain');
+        continue;
+      }
+      if (
+        (!g().turn.timeMode || g().turn.timeMode === 'raise') &&
+        !neos &&
+        g().time < 10 &&
+        P().A >= g().time + 1 &&
+        P().A < 20
+      ) {
+        await actReloadedTime('raise');
+        continue;
+      }
+    }
+    // 3c. Revolutions finale: steer the Time Track to the Smiths' ⚔ (3)
+    if (g().movie === 'revolutions' && g().act === 3 && g().part === 3 && g().time !== 3) {
+      const target = g().time + (g().time > 3 ? -1 : 1);
+      if (P().R + P().A >= target) {
+        await actDeletionMove(g().time > 3 ? -1 : 1);
+        continue;
+      }
+    }
+    // 4. real-world enemies (Cypher, Sentinels, Bane, the Tow Bomb…)
+    const zb = g().zionBlocker;
+    const rwTargets: CardInstance[] = [
+      ...g().realWorldEnemies,
+      ...g().dockEnemies.filter((x): x is CardInstance => !!x),
+      ...(zb ? [zb] : []),
+    ];
+    for (const c of rwTargets) {
       if (!fightBlockReason(c)) {
         await actFight(c.uid);
         did = true;
@@ -78,8 +121,9 @@ async function botActionPhase(cheat: boolean) {
       }
     }
     if (did) continue;
-    // 5. free Neo / jump
+    // 5. free Neo / rescue the Keymaker / jump
     if (
+      g().movie === 'matrix' &&
       g().act === 1 &&
       g().part === 2 &&
       P().rsi === 'real' &&
@@ -88,11 +132,36 @@ async function botActionPhase(cheat: boolean) {
       await actFreeNeo();
       continue;
     }
+    if (
+      g().movie === 'reloaded' &&
+      g().act === 2 &&
+      g().part === 2 &&
+      inMatrix() &&
+      P().inPlay.some(x => D(x).group === 'Keymaker')
+    ) {
+      await actRescueKeymaker();
+      continue;
+    }
     if (g().attached.building && inMatrix() && !g().matrixRow[3]) {
       await actJump();
       continue;
     }
-    // 6. challenges
+    // 6. challenges (Real World ones first — e.g. Make an Offer to Deus Ex Machina)
+    if (P().rsi === 'real') {
+      for (const c of g().realWorldEnemies) {
+        if (D(c).type !== 'challenge' || !c.faceUp) continue;
+        const s = SCRIPTS[c.id];
+        if (s && s.canComplete && s.canComplete(c)) continue;
+        const def = D(c);
+        const ok = def.defeatType === 'R' ? P().R >= (def.defeat || 0) : P().A >= (def.defeat || 0);
+        if (ok) {
+          await actCompleteChallenge(c.uid);
+          did = true;
+          break;
+        }
+      }
+      if (did) continue;
+    }
     if (inMatrix()) {
       const inPlayCards = [
         ...g().operations,
@@ -135,20 +204,21 @@ async function botActionPhase(cheat: boolean) {
       if (did) continue;
     } else {
       // Real World: recruit
-      if (g().hovercraftStack.length && P().R >= 3 && Math.random() < 0.6) {
+      if (P().rsi === 'real' && g().hovercraftStack.length && P().R >= 3 && Math.random() < 0.6) {
         await actRecruitHovercraft();
         continue;
       }
-      for (let i = 0; i < 5; i++) {
-        const c = g().dock[i];
-        if (c && P().R >= (D(c).cost ?? 0)) {
-          await actRecruitDock(i);
-          did = true;
-          break;
-        }
-      }
-      if (did) continue;
     }
+    // Recruit from the Dock (also Digital Heroes while in the Matrix).
+    for (let i = 0; i < 5; i++) {
+      const c = g().dock[i];
+      if (c && canRecruitFromHere(c) && P().R >= effectiveRecruitCost(c)) {
+        await actRecruitDock(i);
+        did = true;
+        break;
+      }
+    }
+    if (did) continue;
     // 9. move once per turn
     if (!g().turn.freeMoveUsed) {
       const before = P().rsi;
@@ -164,6 +234,7 @@ async function botActionPhase(cheat: boolean) {
 
 export interface BotResult {
   avatar: string;
+  movie: Movie;
   over: GameOverState | null;
   turns: number;
   act: number;
@@ -171,13 +242,19 @@ export interface BotResult {
   time: number;
 }
 
-export async function botGame(cheat: boolean): Promise<BotResult> {
-  const ids = Object.keys(AVATARS).filter(a => !AVATARS[a].hidden);
+const MOVIES: Movie[] = ['matrix', 'reloaded', 'revolutions'];
+
+export async function botGame(cheat: boolean, movie?: Movie): Promise<BotResult> {
+  const mv = movie ?? MOVIES[Math.floor(Math.random() * MOVIES.length)];
+  const ids = Object.keys(AVATARS).filter(
+    a => !AVATARS[a].hidden && AVATARS[a].movies.includes(mv),
+  );
   const av = ids[Math.floor(Math.random() * ids.length)];
-  newGame(av, {});
+  newGame(av, {}, mv);
   await startTurnLoop(cheat);
   return {
     avatar: av,
+    movie: mv,
     over: g().gameOver,
     turns: g().turnNo,
     act: g().act,

@@ -7,6 +7,7 @@ import { ACT_CARDS } from '../cards';
 import {
   D,
   P,
+  actBuyTime,
   actCompleteChallenge,
   actEvade,
   actFight,
@@ -15,7 +16,9 @@ import {
   actRecruitHovercraft,
   actScan,
   avatar,
+  canRecruitFromHere,
   effectiveFightCost,
+  effectiveRecruitCost,
   fightBlockReason,
   getG,
   inMatrix,
@@ -53,7 +56,7 @@ function ActZone() {
   const G = getG();
   if (!G) return <div className="zone-body" id="acts-body" />;
   const key = `${G.act}.${G.part}`;
-  const a = ACT_CARDS[key];
+  const a = ACT_CARDS[G.movie][key];
   return (
     <div className="zone-body" id="acts-body">
       <img
@@ -68,14 +71,23 @@ function ActZone() {
 }
 
 function enemyCardProps(c: CardInstance) {
+  const G = getG()!;
   const def = D(c);
   const buttons: CardButton[] = [];
   if (def.evade)
     buttons.push({ label: `Evade ${def.evade}®`, onClick: () => void run(() => actEvade(c.uid)) });
+  if (def.kw.includes('BuyTime') && c.buyTimeTurn !== G.turnNo)
+    buttons.push({
+      label: 'Buy Time 5®',
+      title: "Distract this Agent — it won't strike this turn",
+      onClick: () => void run(() => actBuyTime(c.uid)),
+    });
+  let badge = def.defeat != null ? `${effectiveFightCost(c)}⚔` : null;
+  if (def.life) badge = `${effectiveFightCost(c)}⚔ · ${G.oracleSmithDamage}/${def.life}`;
   return {
     actionable: !fightBlockReason(c),
     onClick: () => void run(() => actFight(c.uid)),
-    badge: def.defeat != null ? `${effectiveFightCost(c)}⚔` : null,
+    badge,
     buttons: buttons.length ? buttons : null,
   };
 }
@@ -91,13 +103,15 @@ function MatrixRow() {
           let cardEl;
           if (c) {
             if (!c.faceUp) {
+              const cost = MX.SCAN_COST[i];
+              const affordable = P().A >= cost || (!!G.backdoors[i] && P().R >= cost);
               cardEl = (
                 <Card
                   c={c}
                   small
-                  actionable={inMatrix() && !G.turn.noScan && P().A >= MX.SCAN_COST[i]}
+                  actionable={inMatrix() && !G.turn.noScan && affordable}
                   onClick={() => void run(() => actScan(i))}
-                  badge={`${MX.SCAN_COST[i]}⚔`}
+                  badge={G.backdoors[i] ? `${cost}⚔/®` : `${cost}⚔`}
                 />
               );
             } else {
@@ -128,6 +142,12 @@ function MatrixRow() {
                       {G.flags.deadPhones[i] ? '☎✕' : '☎'}
                     </span>
                   </>
+                )}
+                {G.backdoors[i] && (
+                  <span className="phone" title="Backdoor: you may pay ® instead of ⚔ to scan here">
+                    {' '}
+                    🚪®
+                  </span>
                 )}
                 <span className="scan-cost">scan {MX.SCAN_COST[i]}⚔</span>
               </div>
@@ -197,6 +217,12 @@ export function Board() {
                   👤
                   <br />
                   {avatar().name}
+                </div>
+              ) : G && P().rsi === 'ops' ? (
+                <div className="standee">
+                  🚇
+                  <br />
+                  Operations
                 </div>
               ) : (
                 <div className="standee empty" />
@@ -285,6 +311,12 @@ export function Board() {
           <div className="zone deck-zone" id="hovercraft">
             <span className="zone-label">
               Hovercraft <small>(3®)</small>
+              {G && G.flyLine && (
+                <small title="Fly the Mechanical Line: gain or play Hovercrafts in the Real World">
+                  {' '}
+                  ✈ {G.flyLine.pos + 1}/6
+                </small>
+              )}
             </span>
             <div className="zone-body" id="hovercraft-body">
               {G && (
@@ -302,9 +334,13 @@ export function Board() {
             <div className="row-body" id="dock-body">
               {G &&
                 G.dock.map((c, i) => {
+                  const swarm = G.dockEnemies[i];
+                  if (swarm) return <Card key={swarm.uid} c={swarm} small forceUp {...enemyCardProps(swarm)} />;
                   if (!c) return <div key={i} className="card small placeholder" />;
                   const afford =
-                    G.phase === 'action' && P().rsi === 'real' && P().R >= (D(c).cost ?? 0);
+                    G.phase === 'action' &&
+                    canRecruitFromHere(c) &&
+                    P().R >= effectiveRecruitCost(c);
                   return (
                     <Card
                       key={c.uid}
@@ -322,7 +358,14 @@ export function Board() {
           <div className="zone deck-zone">
             <span className="zone-label">Zion</span>
             <div className="zone-body" id="zion-body">
-              {G && <DeckStack count={G.zion.length} label="ZION" />}
+              {G && G.zionBlocker ? (
+                <div className="pile">
+                  <Card c={G.zionBlocker} small forceUp {...enemyCardProps(G.zionBlocker)} />
+                  <div className="pile-count">{G.zion.length}</div>
+                </div>
+              ) : (
+                G && <DeckStack count={G.zion.length} label="ZION" />
+              )}
             </div>
           </div>
           <div className="zone pile-zone">

@@ -27,7 +27,7 @@ export function Sidebar({ onHowTo, onRestart }: SidebarProps) {
     if (el) el.scrollTop = el.scrollHeight;
   });
 
-  const act = G ? ACT_CARDS[`${G.act}.${G.part}`] : null;
+  const act = G ? ACT_CARDS[G.movie][`${G.act}.${G.part}`] : null;
   return (
     <aside id="sidebar">
       <div className="phase-banner" id="phase-banner">

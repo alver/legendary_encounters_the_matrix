@@ -1,49 +1,67 @@
-// SetupScreen.tsx — avatar choice + difficulty options. Mirrors the original
-// setup modal (setup-modal) and its option checkboxes.
+// SetupScreen.tsx — film + avatar choice + difficulty options. Mirrors the
+// original setup modal (setup-modal) and its option checkboxes.
 
 import { useState } from 'react';
 import { AVATARS } from '../cards';
-import type { GameOptions } from '../types';
+import { MOVIE_SETUP } from '../game';
+import type { GameOptions, Movie } from '../types';
 import { hidePreview, showPreview } from './store';
 
 interface SetupScreenProps {
   open: boolean;
-  onStart: (avatarId: string, options: GameOptions) => void;
+  onStart: (avatarId: string, options: GameOptions, movie: Movie) => void;
 }
 
+const MOVIES: Movie[] = ['matrix', 'reloaded', 'revolutions'];
+
 export function SetupScreen({ open, onStart }: SetupScreenProps) {
+  const [movie, setMovie] = useState<Movie>('matrix');
   const [chosen, setChosen] = useState<string | null>(null);
   const [prepTurn, setPrepTurn] = useState(false);
   const [dodgeBullets, setDodgeBullets] = useState(false);
   const [systemCards, setSystemCards] = useState(0);
   if (!open) return null;
 
+  const avatars = Object.values(AVATARS).filter(a => !a.hidden && a.movies.includes(movie));
+
   return (
     <div className="modal-overlay open" id="setup-modal">
       <div className="modal center">
         <h1>Legendary Encounters: The Matrix</h1>
-        <p className="subtitle">Solo — the first film. Choose your Avatar.</p>
+        <p className="subtitle">Solo. Choose your film and your Avatar.</p>
+        <div className="movie-tabs" id="movie-tabs">
+          {MOVIES.map(m => (
+            <button
+              key={m}
+              className={'movie-tab' + (movie === m ? ' selected' : '')}
+              onClick={() => {
+                setMovie(m);
+                setChosen(null);
+              }}
+            >
+              {MOVIE_SETUP[m].title}
+            </button>
+          ))}
+        </div>
         <div className="card-grid avatars" id="avatar-grid">
-          {Object.values(AVATARS)
-            .filter(a => !a.hidden)
-            .map(a => (
-              <div
-                key={a.id}
-                className={'card avatar-pick' + (chosen === a.id ? ' selected' : '')}
-                onMouseEnter={() => showPreview(a.image)}
-                onMouseLeave={hidePreview}
-                onClick={() => setChosen(a.id)}
-              >
-                <img src={a.image} draggable={false} alt={a.name} />
-                <div className="av-name">
-                  {a.name}
-                  <br />
-                  <small>
-                    ♥{a.health} · spd {a.speed}
-                  </small>
-                </div>
+          {avatars.map(a => (
+            <div
+              key={a.id}
+              className={'card avatar-pick' + (chosen === a.id ? ' selected' : '')}
+              onMouseEnter={() => showPreview(a.image)}
+              onMouseLeave={hidePreview}
+              onClick={() => setChosen(a.id)}
+            >
+              <img src={a.image} draggable={false} alt={a.name} />
+              <div className="av-name">
+                {a.name}
+                <br />
+                <small>
+                  ♥{a.health} · spd {a.speed}
+                </small>
               </div>
-            ))}
+            </div>
+          ))}
         </div>
         <div className="setup-options">
           <label>
@@ -82,7 +100,7 @@ export function SetupScreen({ open, onStart }: SetupScreenProps) {
             className="primary-btn"
             id="setup-start"
             disabled={!chosen}
-            onClick={() => chosen && onStart(chosen, { prepTurn, dodgeBullets, systemCards })}
+            onClick={() => chosen && onStart(chosen, { prepTurn, dodgeBullets, systemCards }, movie)}
           >
             Begin
           </button>
