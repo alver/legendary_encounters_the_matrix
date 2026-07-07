@@ -53,13 +53,6 @@ export function SetupScreen({ open, onStart }: SetupScreenProps) {
               onClick={() => setChosen(a.id)}
             >
               <img src={a.image} draggable={false} alt={a.name} />
-              <div className="av-name">
-                {a.name}
-                <br />
-                <small>
-                  ♥{a.health} · spd {a.speed}
-                </small>
-              </div>
             </div>
           ))}
         </div>

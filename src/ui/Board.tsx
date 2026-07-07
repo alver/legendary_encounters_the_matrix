@@ -92,10 +92,21 @@ function enemyCardProps(c: CardInstance) {
   };
 }
 
+function Watermark({ text }: { text: string }) {
+  return (
+    <div className="box-watermark" aria-hidden="true">
+      {text.split('').map((ch, k) => (
+        <span key={k}>{ch === ' ' ? ' ' : ch}</span>
+      ))}
+    </div>
+  );
+}
+
 function MatrixRow() {
   const G = getG();
   return (
     <div className="matrix-row" id="matrix-row">
+      <Watermark text="MATRIX" />
       {G &&
         [0, 1, 2, 3, 4].map(i => {
           const c = G.matrixRow[i];
@@ -111,7 +122,6 @@ function MatrixRow() {
                   small
                   actionable={inMatrix() && !G.turn.noScan && affordable}
                   onClick={() => void run(() => actScan(i))}
-                  badge={G.backdoors[i] ? `${cost}⫻/★` : `${cost}⫻`}
                 />
               );
             } else {
@@ -133,24 +143,7 @@ function MatrixRow() {
           }
           return (
             <div className="row-space" key={i}>
-              <div className="space-head">
-                {MX.ROW_NAMES[i]}
-                {phoneSpace && (
-                  <>
-                    {' '}
-                    <span className={'phone' + (G.flags.deadPhones[i] ? ' dead' : '')}>
-                      {G.flags.deadPhones[i] ? '☎✕' : '☎'}
-                    </span>
-                  </>
-                )}
-                {G.backdoors[i] && (
-                  <span className="phone" title="Backdoor: you may pay ★ instead of ⫻ to scan here">
-                    {' '}
-                    🚪★
-                  </span>
-                )}
-                <span className="scan-cost">scan {MX.SCAN_COST[i]}⫻</span>
-              </div>
+              <div className="space-head">{MX.ROW_NAMES[i]}</div>
               {i === 3 && G.attached.building && (
                 <Card
                   c={G.attached.building}
@@ -162,7 +155,25 @@ function MatrixRow() {
                   onClick={() => void run(() => actJump())}
                 />
               )}
-              {cardEl}
+              <div className="card-slot">
+                {phoneSpace && (
+                  <span className={'slot-phone' + (G.flags.deadPhones[i] ? ' dead' : '')}>
+                    {G.flags.deadPhones[i] ? '☎✕' : '☎'}
+                  </span>
+                )}
+                {cardEl}
+              </div>
+              <div className="scan-label">
+                Scan {MX.SCAN_COST[i]}⫻
+                {G.backdoors[i] && (
+                  <span
+                    className="phone"
+                    title="Backdoor: you may pay ★ instead of ⫻ to scan here"
+                  >
+                    /★🚪
+                  </span>
+                )}
+              </div>
             </div>
           );
         })}
@@ -186,9 +197,10 @@ export function Board() {
       <div className="playmat">
         {/* ── Matrix Row band ── */}
         <section className="band band-matrix">
-          <div className="zone acts">
-            <span className="zone-label">Act</span>
+          <div className="acts">
+            <div className="space-head">Act</div>
             <ActZone />
+            <div className="scan-label">{'\u00A0'}</div>
           </div>
           <MatrixRow />
           <div className="zone deck-zone">
@@ -199,7 +211,7 @@ export function Board() {
               )}
             </div>
           </div>
-          <div className="zone pile-zone">
+          <div className="zone pile-zone edge-pile">
             <span className="zone-label">Defeated Enemies</span>
             <div className="zone-body" id="defeated-enemies-body">
               {G && <Pile arr={G.defeatedEnemies} />}
@@ -230,17 +242,19 @@ export function Board() {
             </div>
           </div>
           <div className="zone combat-zone">
-            <span className="zone-label">
-              Combat Zone{' '}
-              <span
-                className={
-                  'phone' + (G && G.combatZone.length >= MX.COMBAT_PHONE_BLOCKED_AT ? ' dead' : '')
-                }
-                id="cz-phone"
-              >
-                ☎ 3★
+            <Watermark text="COMBAT ZONE" />
+            <div
+              className={
+                'cz-phone' +
+                (G && G.combatZone.length >= MX.COMBAT_PHONE_BLOCKED_AT ? ' dead' : '')
+              }
+              id="cz-phone"
+            >
+              <span className="cz-phone-icon">
+                {G && G.combatZone.length >= MX.COMBAT_PHONE_BLOCKED_AT ? '☎✕' : '☎'}
               </span>
-            </span>
+              <span className="cz-phone-cost">3★</span>
+            </div>
             <div className="zone-body row-body" id="combat-zone-body">
               {G &&
                 G.combatZone.map(c => {
@@ -292,16 +306,10 @@ export function Board() {
               {G && <DeckStack count={G.strikeDeck.length} label="STRIKE" />}
             </div>
           </div>
-          <div className="zone pile-zone">
+          <div className="zone pile-zone edge-pile">
             <span className="zone-label">Disc. Strikes</span>
             <div className="zone-body" id="discarded-strikes-body">
               {G && <Pile arr={G.strikeDiscard} />}
-            </div>
-          </div>
-          <div className="zone pile-zone">
-            <span className="zone-label">Disc. Chall./Events</span>
-            <div className="zone-body" id="discarded-ces-body">
-              {G && <Pile arr={G.discardedCES} />}
             </div>
           </div>
         </section>
@@ -368,7 +376,7 @@ export function Board() {
               )}
             </div>
           </div>
-          <div className="zone pile-zone">
+          <div className="zone pile-zone edge-pile">
             <span className="zone-label">Defeated Heroes</span>
             <div className="zone-body" id="defeated-heroes-body">
               {G && <Pile arr={G.defeatedHeroes} />}

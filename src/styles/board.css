@@ -1,6 +1,6 @@
 /* board.css — the playmat: time track, matrix row, zones, dock */
 
-/* ── Time Track ── */
+/* ── Time Track (left edge, vertically centred) ── */
 .time-track {
   display: flex;
   flex-direction: column;
@@ -11,6 +11,9 @@
   border-radius: 6px;
   background: #071409;
   min-width: 52px;
+  /* auto margins centre the track+playmat group on the page, and the track
+     against the playmat's vertical middle */
+  margin: auto 0 auto auto;
 }
 .tt-title {
   font-size: 10px;
@@ -22,7 +25,6 @@
   display: flex;
   flex-direction: column;
   gap: 2px;
-  flex: 1;
 }
 .tt-cell {
   width: 40px;
@@ -49,19 +51,16 @@
 
 /* ── Playmat bands ── */
 .playmat {
-  flex: 1;
+  flex: 0 0 auto; /* hug the bands' natural width */
   display: flex;
   flex-direction: column;
   gap: 8px;
-  min-width: 980px;
+  margin: auto auto auto 0; /* centres the group on the page, both axes */
 }
 .band {
   display: flex;
   gap: 8px;
   align-items: stretch;
-}
-.band-matrix {
-  min-height: 205px;
 }
 .band-combat {
   min-height: 175px;
@@ -108,15 +107,28 @@
 .pile-zone {
   min-width: 96px;
 }
+/* Defeat/discard piles line up in one column at the right edge of every band. */
+.edge-pile {
+  margin-left: auto;
+}
 .deck-zone {
   min-width: 96px;
 }
 
+/* Same column skeleton as .row-space so the act card's bottom lines up
+   with the matrix-row cards. */
 .acts {
-  min-width: 120px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  min-width: 96px;
 }
 .act-img {
-  height: 120px;
+  width: 92px;
+  aspect-ratio: 5 / 7;
+  object-fit: cover;
+  display: block;
   border-radius: 6px;
   border: 1px solid #23c95d;
   cursor: zoom-in;
@@ -124,34 +136,84 @@
 
 /* ── Matrix Row ── */
 .matrix-row {
-  flex: 1;
+  position: relative;
+  flex: 0 0 auto; /* size to the 5 spaces, don't stretch across the band */
   display: flex;
-  gap: 8px;
-  padding: 0;
+  gap: 4px;
+  padding: 4px 8px 6px;
+  border: 1px solid #1f7a3d;
+  border-radius: 8px;
+  background: rgba(8, 26, 14, 0.35);
+  box-shadow:
+    inset 0 0 26px rgba(35, 201, 93, 0.09),
+    0 0 8px rgba(35, 201, 93, 0.15);
+}
+/* Faint zone title stretched across the whole box, behind the cards. */
+.box-watermark {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 26px;
+  font-family: 'Oswald', sans-serif;
+  font-size: 96px;
+  line-height: 1;
+  color: #23c95d;
+  opacity: 0.13;
+  text-shadow: 0 0 26px currentColor;
+  pointer-events: none;
+  user-select: none;
+  overflow: hidden;
+}
+.combat-zone .box-watermark {
+  font-size: 48px;
+  color: #e0483c;
 }
 .row-space {
-  flex: 1;
+  flex: 0 0 auto;
+  width: 96px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 3px;
   padding: 0;
-  min-width: 110px;
 }
 .space-head {
   width: 100%;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 10.5px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: #8fe3a4;
-  padding: 0 2px;
 }
-.scan-cost {
+.card-slot {
+  position: relative;
+  display: flex;
+  justify-content: center;
+}
+.slot-phone {
+  position: absolute;
+  bottom: 6%;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 38px;
+  line-height: 1;
+  color: #ffd75e;
+  pointer-events: none;
+}
+.slot-phone.dead {
+  color: #e0483c;
+  text-decoration: line-through;
+}
+.scan-label {
+  width: 100%;
+  text-align: center;
+  font-size: 14px;
   color: #e8b64c;
-  font-size: 10px;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
 }
 .phone {
   color: #ffd75e;
@@ -160,7 +222,28 @@
   color: #e0483c;
   text-decoration: line-through;
 }
-#cz-phone.dead {
+/* Combat-zone phone: bottom-centre of the box, matrix-sized, price under the icon.
+   Cards flowing into the zone may cover it — intended. */
+.cz-phone {
+  position: absolute;
+  bottom: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1;
+  color: #ffd75e;
+  pointer-events: none;
+}
+.cz-phone-icon {
+  font-size: 38px;
+}
+.cz-phone-cost {
+  font-size: 14px;
+  margin-top: 3px;
+}
+.cz-phone.dead {
   color: #e0483c;
   text-decoration: line-through;
 }
@@ -170,7 +253,10 @@
 }
 
 .combat-zone {
-  flex: 1.4;
+  position: relative;
+  flex: 0 0 auto;
+  width: 306px; /* room for 3 small cards; extras wrap */
+  justify-content: center;
   border: 1px solid #7c2020;
   border-radius: 6px;
   background: rgba(22, 6, 6, 0.4);
@@ -180,7 +266,8 @@
   color: #ef8d84;
 }
 .operations {
-  flex: 1;
+  flex: 0 0 auto;
+  width: 306px; /* room for 3 small cards; extras wrap */
   border: 1px solid #14522a;
   border-radius: 6px;
   background: rgba(6, 22, 11, 0.55);
@@ -190,7 +277,7 @@
 /* ── Dock ── */
 .dock {
   position: relative;
-  flex: 1;
+  flex: 0 0 auto; /* size to its 5 card slots, don't stretch across the band */
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -204,11 +291,10 @@
   color: #ffd75e;
 }
 .dock .row-body {
-  width: 100%;
   display: flex;
   gap: 8px;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
 }
 .recruitable {
   box-shadow: 0 0 12px #ffd75e;
