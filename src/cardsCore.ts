@@ -6,10 +6,12 @@ import { CARD_IMAGE_URLS } from './cardImages';
 import type { CardDef, CardDefInput } from './types';
 
 // Card art comes from legendarycardgame.com's CDN (see cardImages.ts) so the
-// scans don't have to be bundled. The BASE_URL fallback covers ids without a
-// CDN entry — served from public/cards/ if you keep local copies there.
+// scans don't have to be bundled. In dev the local bundle under public/cards/
+// (gitignored, personal use) is preferred so the game works offline.
 export const IMG = (id: string): string =>
-  CARD_IMAGE_URLS[id] || `${import.meta.env.BASE_URL}cards/${id}.jpg`;
+  import.meta.env.DEV
+    ? `${import.meta.env.BASE_URL}cards/${id}.jpg`
+    : CARD_IMAGE_URLS[id] || `${import.meta.env.BASE_URL}cards/${id}.jpg`;
 
 export const CARDS: Record<string, CardDef> = {};
 export function C(input: CardDefInput): CardDef {

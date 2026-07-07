@@ -1,3 +1,5 @@
 node_modules/
 dist/
 .DS_Store
+# Local card art bundle — personal use only, never commit/publish.
+public/cards/

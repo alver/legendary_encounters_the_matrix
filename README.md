@@ -32,6 +32,16 @@ npm run build     # typecheck + bundle into dist/
 npm run preview   # serve dist/ locally
 ```
 
+## Card art
+
+By default card art is loaded from legendarycardgame.com's CDN
+(`src/cardImages.ts`). If you own the original game, you can scan the cards
+and put the images into **`public/cards/`** as `<CardId>.jpg` (380×536 px,
+the ids are the keys in `src/cardImages.ts`) to have proper art in the game —
+in dev mode (`npm run dev`) local files are preferred, so the game also works
+fully offline. The folder is gitignored: the scans are for your personal use
+only and must not be committed or distributed.
+
 ## Project layout
 
 ```
