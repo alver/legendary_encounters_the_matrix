@@ -247,13 +247,6 @@
   color: #e0483c;
   text-decoration: line-through;
 }
-/* Invisible card-sized slot holder so combat cards keep their left/right/middle spots. */
-.cz-spacer {
-  border: none;
-  background: transparent;
-  box-shadow: none;
-  pointer-events: none;
-}
 .attached {
   outline: 2px solid #e8b64c;
   margin-bottom: 2px;
@@ -262,7 +255,7 @@
 .combat-zone {
   position: relative;
   flex: 0 0 auto;
-  width: 306px; /* room for 3 small cards; extras wrap */
+  min-width: 306px; /* room for 3 small cards; widens if more arrive */
   justify-content: center;
   border: 1px solid #7c2020;
   border-radius: 6px;
@@ -273,7 +266,8 @@
   color: #ef8d84;
 }
 .combat-zone .row-body {
-  overflow: visible; /* no scrollbar; extra cards wrap instead */
+  overflow: visible; /* no scrollbar; the zone widens to hold extra cards */
+  flex-wrap: nowrap;
 }
 .operations {
   flex: 0 0 auto;

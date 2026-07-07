@@ -92,6 +92,11 @@
   width: min(380px, 26vw);
   max-height: 88vh;
   border-radius: 12px;
+  /* Green neon border so the overview reads clearly against the dark board. */
+  border: 2px solid #23c95d;
+  box-shadow:
+    0 0 12px rgba(35, 201, 93, 0.75),
+    0 0 30px rgba(35, 201, 93, 0.45);
 }
 
 /* modals */

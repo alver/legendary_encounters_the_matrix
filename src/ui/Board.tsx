@@ -274,23 +274,9 @@ export function Board() {
               <span className="cz-phone-cost">3★</span>
             </div>
             <div className="zone-body row-body" id="combat-zone-body">
-              {G &&
-                (() => {
-                  const cz = G.combatZone;
-                  // Fill slots left, right, middle so the phone behind the
-                  // middle slot stays visible until a third card arrives.
-                  const slots = [cz[0], cz[2], cz[1]];
-                  return [
-                    ...slots.map((c, k) =>
-                      c ? (
-                        combatCard(c)
-                      ) : (
-                        <div key={'spacer' + k} className="card small cz-spacer" />
-                      )
-                    ),
-                    ...cz.slice(3).map(c => combatCard(c)),
-                  ];
-                })()}
+              {/* Cards fill in from the left over the label/phone background;
+                  the box is sized for 3 and widens if more arrive. */}
+              {G && G.combatZone.map(c => combatCard(c))}
             </div>
           </div>
           <div className="zone operations">
@@ -305,13 +291,11 @@ export function Board() {
                       c={c}
                       small
                       forceUp
-                      actionable={def.type === 'challenge'}
-                      badge={
-                        def.type === 'challenge' && def.defeat
-                          ? `${def.defeat}${def.defeatType === 'R' ? '★' : '⫻'}`
-                          : null
+                      onClick={
+                        def.type === 'challenge'
+                          ? () => void run(() => actCompleteChallenge(c.uid))
+                          : undefined
                       }
-                      onClick={() => void run(() => actCompleteChallenge(c.uid))}
                     />
                   );
                 })}
