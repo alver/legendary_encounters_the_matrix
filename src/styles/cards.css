@@ -245,27 +245,23 @@
 .stat.pool-a {
   color: #ff7f73;
 }
-.in-play-zone,
-.hand-zone {
-  position: relative;
-  padding: 15px 4px 2px;
-  border: 1px solid #14522a;
-  border-radius: 6px;
-}
-.in-play-zone {
-  min-height: 55px;
-}
-.hand-zone {
+/* Single card row: played cards (small, muted) then the hand. Top padding
+   leaves room for raised cards to move half a card up. */
+.cards-row {
   flex: 1;
-}
-.hand-row {
   display: flex;
+  align-items: flex-end;
   gap: 10px;
   overflow-x: auto;
-  padding: 4px 2px 12px;
+  padding: 88px 2px 12px;
 }
-.in-play-zone .card {
-  width: 66px;
+/* Played cards stay in the row, lifted half a card up. */
+.cards-row .card.played {
+  transform: translateY(-50%);
+}
+.play-all-btn {
+  margin-left: 14px;
+  padding: 1px 14px;
 }
 
 .controls {

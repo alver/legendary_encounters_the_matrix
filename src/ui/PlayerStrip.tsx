@@ -1,6 +1,7 @@
 // PlayerStrip.tsx — avatar block, strikes, real-world enemies, resource
-// pools, in-play / hand rows and the action buttons + pending tray.
-// Mirrors renderPlayer + renderControls of the original UI.
+// pools, the card row and the action buttons + pending tray. Clicking a hand
+// card plays it and it rises half a card up to show it's in play this round;
+// "Play all" plays the whole hand when the order doesn't matter.
 
 import {
   D,
@@ -152,6 +153,11 @@ function ActionButtons() {
 
 export function PlayerStrip() {
   const G = getG();
+  // Plays the current hand left to right; cards drawn mid-way are not included.
+  const playAll = () =>
+    void run(async () => {
+      for (const c of [...P().hand]) await actPlayCard(c.uid);
+    });
   return (
     <section id="player-strip">
       <div className="avatar-block">
@@ -237,59 +243,60 @@ export function PlayerStrip() {
               {G.movie === 'reloaded' && G.act === 2 && (
                 <span className="stat">Henchmen {G.flags.henchmenDefeated}/5</span>
               )}
+              <span className="stat" id="deck-counts">
+                Deck {P().deck.length} · Discard {P().discard.length}
+              </span>
+              {G.phase === 'action' && P().hand.length > 0 && (
+                <button className="primary-btn play-all-btn" onClick={playAll}>
+                  ▶ Play all ({P().hand.length})
+                </button>
+              )}
             </>
           )}
         </div>
-        <div className="in-play-zone">
-          <span className="zone-label">In Play</span>
-          <div className="hand-row" id="in-play">
-            {G &&
-              P().inPlay.map(c => {
-                const buttons: CardButton[] = [];
-                if (D(c).kw.includes('Sacrifice'))
-                  buttons.push({
-                    label: 'Sacrifice',
-                    onClick: () => void run(() => actSacrifice(c.uid)),
-                  });
-                return (
-                  <Card key={c.uid} c={c} small forceUp buttons={buttons.length ? buttons : null} />
-                );
-              })}
-          </div>
-        </div>
-        <div className="hand-zone">
-          <span className="zone-label">
-            Hand{' '}
-            <span id="deck-counts">
-              {G && ` — deck ${P().deck.length} · discard ${P().discard.length}`}
-            </span>
-          </span>
-          <div className="hand-row" id="hand">
-            {G &&
-              P().hand.map(c => {
-                const buttons: CardButton[] = [];
-                if (
-                  D(c).kw.includes('Coordinate') &&
-                  (!G.turn.coordUsed || c.id === 'ShipCaptains_4Uncommon') &&
-                  G.turnNo >= G.flags.noCoordUntilTurn
-                )
-                  buttons.push({
-                    label: '⇆ Coord',
-                    title: 'Solo Coordinate: discard to draw a card',
-                    onClick: () => void run(() => actCoordinate(c.uid)),
-                  });
-                return (
-                  <Card
-                    key={c.uid}
-                    c={c}
-                    forceUp
-                    actionable={G.phase === 'action'}
-                    onClick={() => void run(() => actPlayCard(c.uid))}
-                    buttons={buttons.length ? buttons : null}
-                  />
-                );
-              })}
-          </div>
+        <div className="cards-row" id="hand">
+          {G &&
+            P().inPlay.map(c => {
+              const buttons: CardButton[] = [];
+              if (D(c).kw.includes('Sacrifice'))
+                buttons.push({
+                  label: 'Sacrifice',
+                  onClick: () => void run(() => actSacrifice(c.uid)),
+                });
+              return (
+                <Card
+                  key={c.uid}
+                  c={c}
+                  forceUp
+                  className="played"
+                  buttons={buttons.length ? buttons : null}
+                />
+              );
+            })}
+          {G &&
+            P().hand.map(c => {
+              const buttons: CardButton[] = [];
+              if (
+                D(c).kw.includes('Coordinate') &&
+                (!G.turn.coordUsed || c.id === 'ShipCaptains_4Uncommon') &&
+                G.turnNo >= G.flags.noCoordUntilTurn
+              )
+                buttons.push({
+                  label: '⇆ Coord',
+                  title: 'Solo Coordinate: discard to draw a card',
+                  onClick: () => void run(() => actCoordinate(c.uid)),
+                });
+              return (
+                <Card
+                  key={c.uid}
+                  c={c}
+                  forceUp
+                  actionable={G.phase === 'action'}
+                  onClick={() => void run(() => actPlayCard(c.uid))}
+                  buttons={buttons.length ? buttons : null}
+                />
+              );
+            })}
         </div>
       </div>
 

@@ -82,14 +82,32 @@ function enemyCardProps(c: CardInstance) {
       title: "Distract this Agent — it won't strike this turn",
       onClick: () => void run(() => actBuyTime(c.uid)),
     });
-  let badge = def.defeat != null ? `${effectiveFightCost(c)}⫻` : null;
-  if (def.life) badge = `${effectiveFightCost(c)}⫻ · ${G.oracleSmithDamage}/${def.life}`;
+  // The printed card shows its own fight cost — only badge the bosses whose
+  // accumulated damage isn't on the card.
+  const badge = def.life ? `${effectiveFightCost(c)}⫻ · ${G.oracleSmithDamage}/${def.life}` : null;
   return {
     actionable: !fightBlockReason(c),
     onClick: () => void run(() => actFight(c.uid)),
     badge,
     buttons: buttons.length ? buttons : null,
   };
+}
+
+function combatCard(c: CardInstance) {
+  const def = D(c);
+  if (def.type === 'enemy') return <Card key={c.uid} c={c} small forceUp {...enemyCardProps(c)} />;
+  if (def.type === 'challenge')
+    return (
+      <Card
+        key={c.uid}
+        c={c}
+        small
+        forceUp
+        actionable
+        onClick={() => void run(() => actCompleteChallenge(c.uid))}
+      />
+    );
+  return <Card key={c.uid} c={c} small forceUp />;
 }
 
 function Watermark({ text }: { text: string }) {
@@ -257,23 +275,22 @@ export function Board() {
             </div>
             <div className="zone-body row-body" id="combat-zone-body">
               {G &&
-                G.combatZone.map(c => {
-                  const def = D(c);
-                  if (def.type === 'enemy')
-                    return <Card key={c.uid} c={c} small forceUp {...enemyCardProps(c)} />;
-                  if (def.type === 'challenge')
-                    return (
-                      <Card
-                        key={c.uid}
-                        c={c}
-                        small
-                        forceUp
-                        actionable
-                        onClick={() => void run(() => actCompleteChallenge(c.uid))}
-                      />
-                    );
-                  return <Card key={c.uid} c={c} small forceUp />;
-                })}
+                (() => {
+                  const cz = G.combatZone;
+                  // Fill slots left, right, middle so the phone behind the
+                  // middle slot stays visible until a third card arrives.
+                  const slots = [cz[0], cz[2], cz[1]];
+                  return [
+                    ...slots.map((c, k) =>
+                      c ? (
+                        combatCard(c)
+                      ) : (
+                        <div key={'spacer' + k} className="card small cz-spacer" />
+                      )
+                    ),
+                    ...cz.slice(3).map(c => combatCard(c)),
+                  ];
+                })()}
             </div>
           </div>
           <div className="zone operations">
